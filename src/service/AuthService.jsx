@@ -1,10 +1,9 @@
-import axios from "../api/axiosConfig";
+import api from "../api/axiosConfig";
 
-
-const CLIENTE_BASE_REST_API_URL = `/api/auth`;
+const CLIENTE_BASE_REST_API_URL = "/api/auth";
 
 const login = async (email, contrasenia) => {
-  const response = await axios.post(
+  const response = await api.post(
     `${CLIENTE_BASE_REST_API_URL}/login`,
     { email, contrasenia }
   );
@@ -27,10 +26,4 @@ const login = async (email, contrasenia) => {
   return { usuario, token: tokenFinal, tipo_usuario };
 };
 
-const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("usuario");
-  localStorage.removeItem("tipo_usuario");
-};
-
-export default { login, logout };
+export default { login };
