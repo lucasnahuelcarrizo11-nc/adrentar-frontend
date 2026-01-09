@@ -1,16 +1,15 @@
-import axios from "axios";
+import api from "../api/axiosConfig";
 
-const API_URL = "http://localhost:8080/api/alquileres";
+const BASE_URL = "/api/alquileres";
 
 class NotificacionService {
-  // 📬 Obtener todas las notificaciones de un inquilino
+
   listarNotificaciones(idInquilino) {
-    return axios.get(`${API_URL}/notificaciones/${idInquilino}`);
+    return api.get(`${BASE_URL}/notificaciones/${idInquilino}`);
   }
 
-  // ✅ Marcar notificación como leída
   marcarComoLeida(idNotificacion) {
-    return axios.put(`${API_URL}/notificaciones/${idNotificacion}/leer`);
+    return api.put(`${BASE_URL}/notificaciones/${idNotificacion}/leer`);
   }
 }
 
