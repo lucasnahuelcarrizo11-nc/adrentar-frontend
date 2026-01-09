@@ -1,6 +1,8 @@
-import axios from "axios";
+import axios from "../api/axiosConfig";
 
-const CLIENTE_BASE_REST_API_URL = "http://localhost:8080/api/propiedad";
+
+
+const CLIENTE_BASE_REST_API_URL = `/api/propiedad`;
 
 class PropiedadService {
 

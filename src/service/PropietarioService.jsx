@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const CLIENTE_BASE_REST_API_URL = "http://localhost:8080/api/propietarios";
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+const CLIENTE_BASE_REST_API_URL = `${BASE_URL}/api/propietarios`;
 
 class PropietarioService {
   listarPropietarios() {

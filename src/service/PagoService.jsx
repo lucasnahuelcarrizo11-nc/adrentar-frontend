@@ -1,10 +1,12 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/pagos";
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+const CLIENTE_BASE_REST_API_URL = `${BASE_URL}/api/pagos`;
 
 const crearPago = async (idAlquiler, mes, anio) => {
   const response = await axios.post(
-    `${API_URL}/preference`,
+    `${CLIENTE_BASE_REST_API_URL}/preference`,
     null,
     {
       params: {

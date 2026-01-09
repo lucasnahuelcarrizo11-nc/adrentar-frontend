@@ -1,20 +1,21 @@
-import axios from "axios";
+import axios from "../api/axiosConfig";
 
-const API_URL = "http://localhost:8080/api/auth";
+
+const CLIENTE_BASE_REST_API_URL = `/api/auth`;
 
 const login = async (email, contrasenia) => {
-  const response = await axios.post(`${API_URL}/login`, { email, contrasenia });
+  const response = await axios.post(
+    `${CLIENTE_BASE_REST_API_URL}/login`,
+    { email, contrasenia }
+  );
 
   const { usuario, token, tipo_usuario } = response.data;
 
   const tokenFinal = `Bearer ${token}`;
 
   localStorage.setItem("token", tokenFinal);
-
-  // Guardar tipo_usuario en su propia clave
   localStorage.setItem("tipo_usuario", tipo_usuario?.toUpperCase());
 
-  // Guardar usuario completo
   localStorage.setItem(
     "usuario",
     JSON.stringify({
@@ -26,15 +27,10 @@ const login = async (email, contrasenia) => {
   return { usuario, token: tokenFinal, tipo_usuario };
 };
 
-const logout = async () => {
-  const token = localStorage.getItem("token");
-
-  await axios.post(`${API_URL}/logout`, {}, {
-    headers: { Authorization: token },
-  });
-
+const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("usuario");
+  localStorage.removeItem("tipo_usuario");
 };
 
 export default { login, logout };
