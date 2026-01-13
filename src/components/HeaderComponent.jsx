@@ -5,7 +5,7 @@ import NotificacionesBell from "./NotificacionesBell"; // 👈 importar el compo
 const HeaderComponent = () => {
   const { logout, usuario } = useAuth();
 
-   const tipoUsuario = (localStorage.getItem("tipo_usuario") || "").toUpperCase();
+  const tipoUsuario = (localStorage.getItem("tipo_usuario") || "").toUpperCase();
 
   return (
     <aside className="flex flex-col h-full p-4 bg-gray-800 text-white">
@@ -34,9 +34,14 @@ const HeaderComponent = () => {
           </>
         )}
 
+
+
         {/* ⭐ TODOS LOS USUARIOS VEN ALQUILERES */}
         <Link to="/listAlquileres" className="hover:text-indigo-400">
           Alquileres
+        </Link>
+        <Link to="/listProveedor" className="hover:text-indigo-400">
+          Proveedores
         </Link>
       </nav>
 

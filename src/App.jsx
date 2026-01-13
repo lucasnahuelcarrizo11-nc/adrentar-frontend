@@ -19,6 +19,8 @@ import CrearPropiedad from './components/propiedad/CrearPropiedad';
 import ListPropiedades from './components/propiedad/ListPropiedades';
 import ListAlquileres from './components/alquiler/ListAlquileres';
 import CrearAlquiler from './components/alquiler/CrearAlquiler';
+import ListProveedor from './components/proveedor/ListProveedor';
+import CrearProveedor from './components/proveedor/CrearProveedor';
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -26,7 +28,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <BrowserRouter>
-        
+
         {/* Header público cuando NO está logueado */}
         {!isLoggedIn && <HeaderLogout />}
 
@@ -92,9 +94,14 @@ function App() {
                   element={<ListAlquileres />}
                 />
 
+                {/* Proveedores */}
+                <Route path="/listProveedor" element={<ListProveedor />} />
+                <Route path="/crearProveedor" element={<CrearProveedor />} />
+                <Route path="/editarProveedor/:id" element={<CrearProveedor />} />
+
                 {/* Ruta por defecto cuando logueado */}
                 <Route path="*" element={<Navigate to="/listPropiedades" />} />
-                
+
               </Routes>
             </div>
           </div>
