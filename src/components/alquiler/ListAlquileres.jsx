@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import AlquilerService from "../../service/AlquilerService";
-import PagoService from "../../service/PagoService";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+
+import AlquilerService from "../../service/AlquilerService";
+import DocumentoService from "../../service/DocumentoService";
+import PagoService from "../../service/PagoService";
 
 /* ===============================
    Utils
@@ -10,7 +12,6 @@ import { toast } from "react-toastify";
 const generarMesesAlquiler = (fechaInicio, fechaFin) => {
   const inicio = new Date(fechaInicio);
   const fin = new Date(fechaFin);
-
   const meses = [];
   let actual = new Date(inicio);
 
@@ -22,35 +23,36 @@ const generarMesesAlquiler = (fechaInicio, fechaFin) => {
         month: "long",
         year: "numeric",
       }),
-      estado: "PENDIENTE",
     });
-
     actual.setMonth(actual.getMonth() + 1);
   }
 
   return meses;
 };
 
+const formatearFecha = (fecha) =>
+  fecha ? new Date(fecha).toLocaleDateString("es-AR") : "-";
+
 /* ===============================
    Component
 ================================ */
 const ListAlquileres = () => {
   const [alquileres, setAlquileres] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [alquilerExpandido, setAlquilerExpandido] = useState(null);
+  const [docs, setDocs] = useState([]);
+  const [archivo, setArchivo] = useState(null);
 
-  const tipoUsuario = (localStorage.getItem("tipo_usuario") || "").toUpperCase();
+  const [alquilerExpandidoPagos, setAlquilerExpandidoPagos] = useState(null);
+  const [alquilerExpandidoDocs, setAlquilerExpandidoDocs] = useState(null);
 
+  const rol = (localStorage.getItem("tipo_usuario") || "").toUpperCase();
+
+  /* ===============================
+     Data
+  ================================ */
   const cargarAlquileres = () => {
     AlquilerService.obtenerMisAlquileres()
-      .then((res) => {
-        setAlquileres(res.data);
-        setLoading(false);
-      })
-      .catch(() => {
-        toast.error("Error al obtener alquileres");
-        setLoading(false);
-      });
+      .then((res) => setAlquileres(res.data))
+      .catch(() => toast.error("Error al obtener alquileres"));
   };
 
   useEffect(() => {
@@ -58,26 +60,8 @@ const ListAlquileres = () => {
   }, []);
 
   /* ===============================
-     Acciones
+     Pagos
   ================================ */
-  const aceptar = (id) => {
-    AlquilerService.aceptarAlquiler(id)
-      .then(() => {
-        toast.success("Alquiler aceptado");
-        cargarAlquileres();
-      })
-      .catch(() => toast.error("Error al aceptar alquiler"));
-  };
-
-  const rechazar = (id) => {
-    AlquilerService.rechazarAlquiler(id)
-      .then(() => {
-        toast.success("Alquiler rechazado");
-        cargarAlquileres();
-      })
-      .catch(() => toast.error("Error al rechazar alquiler"));
-  };
-
   const pagarMes = async (idAlquiler, mes) => {
     try {
       const initPoint = await PagoService.crearPago(
@@ -91,21 +75,75 @@ const ListAlquileres = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <p className="text-center mt-10 text-gray-600">
-        Cargando alquileres...
-      </p>
-    );
-  }
+  /* ===============================
+     Documentos
+  ================================ */
+  const toggleDocs = async (idAlquiler) => {
+    if (alquilerExpandidoDocs === idAlquiler) {
+      setAlquilerExpandidoDocs(null);
+      return;
+    }
 
+    try {
+      setAlquilerExpandidoDocs(idAlquiler);
+      const res =
+        await DocumentoService.obtenerDocumentosPorAlquiler(idAlquiler);
+      setDocs(res.data);
+    } catch {
+      toast.error("Error al cargar documentos");
+    }
+  };
+
+  const subirDocumento = async (idAlquiler) => {
+    if (!archivo) return;
+
+    try {
+      await DocumentoService.subirDocumento(idAlquiler, archivo);
+      setArchivo(null);
+
+      const res =
+        await DocumentoService.obtenerDocumentosPorAlquiler(idAlquiler);
+      setDocs(res.data);
+
+      toast.success("Documento subido correctamente");
+    } catch {
+      toast.error("Error al subir documento");
+    }
+  };
+
+  const eliminarDocumento = async (id) => {
+    if (!window.confirm("¿Eliminar documento?")) return;
+
+    try {
+      await DocumentoService.eliminarDocumento(id);
+      setDocs((prev) => prev.filter((d) => d.id !== id));
+      toast.success("Documento eliminado");
+    } catch {
+      toast.error("Error al eliminar documento");
+    }
+  };
+
+  const verDocumento = async (doc) => {
+    try {
+      const res = await DocumentoService.descargarDocumento(doc.id);
+      const url = window.URL.createObjectURL(
+        new Blob([res.data], { type: res.headers["content-type"] })
+      );
+      window.open(url);
+    } catch {
+      toast.error("Error al abrir documento");
+    }
+  };
+
+  /* ===============================
+     Render
+  ================================ */
   return (
     <div className="bg-white rounded-2xl shadow-md p-6">
-      {/* ===== HEADER ===== */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Mis Alquileres</h2>
 
-        {tipoUsuario === "PROPIETARIO" && (
+        {(rol === "PROPIETARIO" || rol === "ADMIN") && (
           <Link
             to="/crearAlquiler"
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
@@ -115,161 +153,187 @@ const ListAlquileres = () => {
         )}
       </div>
 
-      {/* ===== TABLE ===== */}
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 rounded-lg">
+        <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-6 py-3 text-left">Propiedad</th>
-              {tipoUsuario !== "INQUILINO" && (
-                <th className="px-6 py-3 text-left">Inquilino</th>
-              )}
-              <th className="px-6 py-3 text-left">Estado</th>
-              <th className="px-6 py-3 text-left">Inicio</th>
-              <th className="px-6 py-3 text-left">Fin</th>
-              <th className="px-6 py-3 text-center">Acciones</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase">
+                Propiedad
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase">
+                Propietario
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase">
+                Inquilino
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase">
+                Inicio
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase">
+                Fin
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600 uppercase">
+                Estado
+              </th>
+              <th className="px-6 py-3 text-center text-sm font-semibold text-gray-600 uppercase">
+                Acciones
+              </th>
             </tr>
           </thead>
 
           <tbody>
             {alquileres.map((alq) => (
-              <React.Fragment key={alq.idAlquiler}>
-                {/* ===== FILA PRINCIPAL ===== */}
-                <tr className="hover:bg-gray-50">
+              <React.Fragment key={alq.id}>
+                <tr className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 border-t">
-                    {alq.propiedad?.direccion}
+                    {alq.direccionPropiedad || "-"}
                   </td>
-
-                  {tipoUsuario !== "INQUILINO" && (
-                    <td className="px-6 py-4 border-t">
-                      {alq.inquilino
-                        ? `${alq.inquilino.nombre} ${alq.inquilino.apellido}`
-                        : "Sin asignar"}
-                    </td>
-                  )}
+                  <td className="px-6 py-4 border-t">
+                    {alq.propietario
+                      ? `${alq.propietario.nombre} ${alq.propietario.apellido}`
+                      : "-"}
+                  </td>
+                 <td className="px-6 py-4 border-t">
+  {alq.nombreInquilino && alq.apellidoInquilino
+    ? `${alq.nombreInquilino} ${alq.apellidoInquilino}`
+    : "-"}
+</td>
 
                   <td className="px-6 py-4 border-t">
-                    <span
-                      className={`px-2 py-1 rounded-md text-sm
-                        ${
-                          alq.estado === "PENDIENTE"
-                            ? "bg-yellow-200 text-yellow-800"
-                            : alq.estado === "ACEPTADO"
-                            ? "bg-green-200 text-green-800"
-                            : "bg-gray-300 text-gray-800"
-                        }`}
+                    {formatearFecha(alq.fechaInicio)}
+                  </td>
+                  <td className="px-6 py-4 border-t">
+                    {formatearFecha(alq.fechaFin)}
+                  </td>
+                  <td className="px-6 py-4 border-t">{alq.estado}</td>
+
+                  <td className="px-6 py-4 border-t text-center space-x-2">
+                    <button
+                      onClick={() =>
+                        setAlquilerExpandidoPagos(
+                          alquilerExpandidoPagos === alq.id ? null : alq.id
+                        )
+                      }
+                      className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition"
                     >
-                      {alq.estado}
-                    </span>
-                  </td>
+                      Pagos
+                    </button>
 
-                  <td className="px-6 py-4 border-t">
-                    {alq.fechaInicio}
-                  </td>
-                  <td className="px-6 py-4 border-t">
-                    {alq.fechaFin}
-                  </td>
-
-                  <td className="px-6 py-4 border-t text-center">
-                    {tipoUsuario === "INQUILINO" &&
-                      alq.estado === "PENDIENTE" && (
-                        <>
-                          <button
-                            className="bg-green-600 text-white px-3 py-1 rounded mr-2"
-                            onClick={() => aceptar(alq.idAlquiler)}
-                          >
-                            Aceptar
-                          </button>
-                          <button
-                            className="bg-red-600 text-white px-3 py-1 rounded"
-                            onClick={() => rechazar(alq.idAlquiler)}
-                          >
-                            Rechazar
-                          </button>
-                        </>
-                      )}
-
-                    {tipoUsuario === "INQUILINO" &&
-                      alq.estado === "ACEPTADO" && (
-                        <button
-                          className="bg-blue-600 text-white px-3 py-1 rounded"
-                          onClick={() =>
-                            setAlquilerExpandido(
-                              alquilerExpandido === alq.idAlquiler
-                                ? null
-                                : alq.idAlquiler
-                            )
-                          }
-                        >
-                          Ver pagos
-                        </button>
-                      )}
+                    <button
+                      onClick={() => toggleDocs(alq.id)}
+                      className="bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700 transition"
+                    >
+                      Docs
+                    </button>
                   </td>
                 </tr>
 
-                {/* ===== DETALLE DE PAGOS ===== */}
-                {alquilerExpandido === alq.idAlquiler && (
+                {/* PAGOS */}
+                {alquilerExpandidoPagos === alq.id && (
                   <tr>
-                    <td colSpan="6" className="bg-gray-50 px-6 py-6">
-                      <h4 className="font-semibold text-lg mb-4">
-                        Detalle de pagos mensuales
-                      </h4>
-
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-4 text-sm font-semibold text-gray-600 px-4">
-                          <span>Mes</span>
-                          <span>Estado</span>
-                          <span>Importe</span>
-                          <span className="text-right">Acción</span>
-                        </div>
-
+                    <td colSpan="7" className="bg-gray-50 px-6 py-4">
+                      <div className="bg-white border rounded-lg p-4 space-y-2">
                         {generarMesesAlquiler(
                           alq.fechaInicio,
                           alq.fechaFin
-                        ).map((mes, index) => {
-                          const importe = alq.precio ?? 0;
-
-                          return (
-                            <div
-                              key={index}
-                              className="
-                                grid grid-cols-4 items-center
-                                bg-white px-4 py-3 rounded-xl
-                                shadow-sm transition
-                                hover:shadow-md hover:bg-gray-50
-                              "
+                        ).map((mes, i) => (
+                          <div
+                            key={i}
+                            className="flex justify-between items-center border rounded-md px-3 py-2"
+                          >
+                            <span className="capitalize">{mes.label}</span>
+                            <button
+                              onClick={() => pagarMes(alq.id, mes)}
+                              className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition"
                             >
-                              <span className="capitalize font-medium">
-                                {mes.label}
-                              </span>
+                              Pagar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                )}
 
-                              <span className="text-sm px-3 py-1 rounded-full bg-yellow-200 text-yellow-800 w-fit">
-                                {mes.estado}
-                              </span>
+                {/* DOCUMENTOS */}
+                {alquilerExpandidoDocs === alq.id && (
+                  <tr>
+                    <td colSpan="7" className="bg-gray-50 px-6 py-6">
+                      <div className="bg-white rounded-xl shadow-sm border p-5">
+                        <h4 className="text-lg font-semibold text-gray-700 mb-4">
+                          📁 Documentos del alquiler
+                        </h4>
 
-                              <span className="font-semibold">
-                                ${importe.toLocaleString("es-AR")}
-                              </span>
+                        {docs.length > 0 ? (
+                          <div className="space-y-3">
+                            {docs.map((d) => (
+                              <div
+                                key={d.id}
+                                className="flex justify-between items-center border rounded-lg px-4 py-3 hover:bg-gray-50 transition"
+                              >
+                                <span className="font-medium">
+                                  📄 {d.nombreArchivo}
+                                </span>
 
-                              <div className="text-right">
-                                <button
-                                  className="bg-green-600 text-white px-4 py-1.5 rounded-lg hover:bg-green-700 transition"
-                                  onClick={() =>
-                                    pagarMes(alq.idAlquiler, mes)
-                                  }
-                                >
-                                  Pagar
-                                </button>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => verDocumento(d)}
+                                    className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition"
+                                  >
+                                    Ver
+                                  </button>
+
+                                  <button
+                                    onClick={() => eliminarDocumento(d.id)}
+                                    className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition"
+                                  >
+                                    Eliminar
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500 italic">
+                            No hay documentos cargados.
+                          </p>
+                        )}
+
+                        <div className="mt-6 border-t pt-4">
+                          <div className="flex gap-3 items-center">
+                            <input
+                              type="file"
+                              onChange={(e) =>
+                                setArchivo(e.target.files[0])
+                              }
+                            />
+                            <button
+                              onClick={() => subirDocumento(alq.id)}
+                              disabled={!archivo}
+                              className={`px-4 py-2 rounded-md text-white ${
+                                archivo
+                                  ? "bg-green-600 hover:bg-green-700"
+                                  : "bg-gray-400 cursor-not-allowed"
+                              }`}
+                            >
+                              Subir documento
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </td>
                   </tr>
                 )}
               </React.Fragment>
             ))}
+
+            {alquileres.length === 0 && (
+              <tr>
+                <td colSpan="7" className="text-center py-6 text-gray-500">
+                  No hay alquileres registrados.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

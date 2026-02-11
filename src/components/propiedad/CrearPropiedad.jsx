@@ -13,7 +13,7 @@ const markerIcon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-// Componente interno: escucha clics en el mapa y actualiza coordenadas
+// Componente interno: click en el mapa
 const LocationMarker = ({ setCoords, setDireccion }) => {
   useMapEvents({
     click: async (e) => {
@@ -21,15 +21,18 @@ const LocationMarker = ({ setCoords, setDireccion }) => {
       setCoords({ lat, lng });
 
       try {
-        // Reverse geocoding: obtener dirección desde coordenadas
-        const res = await axios.get('https://nominatim.openstreetmap.org/reverse', {
-          params: {
-            lat,
-            lon: lng,
-            format: 'json',
-          },
-        });
-        if (res.data && res.data.display_name) {
+        const res = await axios.get(
+          'https://nominatim.openstreetmap.org/reverse',
+          {
+            params: {
+              lat,
+              lon: lng,
+              format: 'json',
+            },
+          }
+        );
+
+        if (res.data?.display_name) {
           setDireccion(res.data.display_name);
         }
       } catch (error) {
@@ -37,6 +40,7 @@ const LocationMarker = ({ setCoords, setDireccion }) => {
       }
     },
   });
+
   return null;
 };
 
@@ -44,68 +48,73 @@ const CrearPropiedad = () => {
   const [direccion, setDireccion] = useState('');
   const [estado, setEstado] = useState('');
   const [ambientes, setAmbientes] = useState('');
+  const [coords, setCoords] = useState({ lat: -34.6037, lng: -58.3816 });
   const [errores, setErrores] = useState({});
-  const [coords, setCoords] = useState({ lat: -34.6037, lng: -58.3816 }); // Default: Buenos Aires
+  const [errorBackend, setErrorBackend] = useState('');
 
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // ✅ Validación mejorada
+  // ---------------- VALIDACIÓN FRONT ----------------
   const validarFormulario = () => {
     const nuevosErrores = {};
 
-    if (!String(direccion).trim()) {
+    if (!direccion.trim()) {
       nuevosErrores.direccion = 'La dirección es obligatoria';
     }
 
-    if (!String(estado).trim()) {
+    if (!estado.trim()) {
       nuevosErrores.estado = 'El estado es obligatorio';
     }
 
-    if (!String(ambientes).trim()) {
+    if (!ambientes.trim()) {
       nuevosErrores.ambientes = 'La cantidad de ambientes es obligatoria';
     } else if (!/^[1-9]\d*$/.test(ambientes)) {
-      nuevosErrores.ambientes = 'Debe ingresar un número entero mayor a 0';
+      nuevosErrores.ambientes = 'Debe ser un número mayor a 0';
     }
 
     return nuevosErrores;
   };
 
-  // Geocodificación: dirección → coordenadas
+  // ---------------- GEOCODIFICACIÓN ----------------
   const buscarCoordenadas = async (dir) => {
     try {
-      const res = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: dir,
-          format: 'json',
-          addressdetails: 1,
-          limit: 1,
-        },
-      });
+      const res = await axios.get(
+        'https://nominatim.openstreetmap.org/search',
+        {
+          params: {
+            q: dir,
+            format: 'json',
+            limit: 1,
+          },
+        }
+      );
 
-      if (res.data && res.data.length > 0) {
-        const { lat, lon } = res.data[0];
-        setCoords({ lat: parseFloat(lat), lng: parseFloat(lon) });
+      if (res.data?.length > 0) {
+        setCoords({
+          lat: parseFloat(res.data[0].lat),
+          lng: parseFloat(res.data[0].lon),
+        });
       }
     } catch (error) {
       console.error('Error buscando coordenadas:', error);
     }
   };
 
-  // 🔍 Actualizar coordenadas cuando cambia la dirección
   useEffect(() => {
-    if (String(direccion).trim().length > 3) {
-      const delayDebounceFn = setTimeout(() => {
+    if (direccion.trim().length > 3) {
+      const timeout = setTimeout(() => {
         buscarCoordenadas(direccion);
       }, 800);
-      return () => clearTimeout(delayDebounceFn);
+      return () => clearTimeout(timeout);
     }
   }, [direccion]);
 
-  // ✅ Guardar o actualizar propiedad
+  // ---------------- GUARDAR / ACTUALIZAR ----------------
   const saveOrUpdatePropiedad = async (e) => {
     e.preventDefault();
     setErrores({});
+    setErrorBackend('');
 
     const erroresFront = validarFormulario();
     if (Object.keys(erroresFront).length > 0) {
@@ -114,9 +123,9 @@ const CrearPropiedad = () => {
     }
 
     const propiedad = {
-      direccion: String(direccion).trim(),
+      direccion: direccion.trim(),
       ambientes: Number(ambientes),
-      estado: String(estado).trim(),
+      estado: estado.trim(),
       latitud: coords.lat,
       longitud: coords.lng,
     };
@@ -129,114 +138,117 @@ const CrearPropiedad = () => {
       }
       navigate('/listPropiedades');
     } catch (error) {
-      console.error('Error al guardar propiedad:', error);
-    }
-  };
+  if (error.response) {
+    const data = error.response.data;
 
-  // 🔁 Cargar datos si se edita una propiedad
+    if (typeof data === 'string') {
+      setErrorBackend(data);
+    } else if (data.message) {
+      setErrorBackend(data.message);
+    } else {
+      setErrorBackend('Esta direccion ya existe');
+    }
+  } else {
+    setErrorBackend('No se pudo conectar con el servidor');
+  }
+}
+  }
+
+  // ---------------- CARGAR SI ES EDICIÓN ----------------
   useEffect(() => {
     if (id) {
       PropiedadService.getPropiedadById(id)
-        .then((response) => {
-          setDireccion(response.data.direccion ?? '');
-          setAmbientes(String(response.data.ambientes ?? ''));
-          setEstado(response.data.estado ?? '');
-          if (response.data.latitud && response.data.longitud) {
+        .then((res) => {
+          setDireccion(res.data.direccion ?? '');
+          setAmbientes(String(res.data.ambientes ?? ''));
+          setEstado(res.data.estado ?? '');
+
+          if (res.data.latitud && res.data.longitud) {
             setCoords({
-              lat: response.data.latitud,
-              lng: response.data.longitud,
+              lat: res.data.latitud,
+              lng: res.data.longitud,
             });
           }
         })
-        .catch((error) => console.log(error));
+        .catch((err) => console.error(err));
     }
   }, [id]);
 
-  // 🏷️ Título dinámico
-  const title = () =>
-    id ? (
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
-        Editar Propiedad
-      </h2>
-    ) : (
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">
-        Agregar Propiedad
-      </h2>
-    );
-
+  // ---------------- UI ----------------
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-md">
-      {title()}
+      <h2 className="text-2xl font-bold mb-6 text-center">
+        {id ? 'Editar Propiedad' : 'Agregar Propiedad'}
+      </h2>
 
-      <form className="space-y-5" onSubmit={saveOrUpdatePropiedad}>
+      <form onSubmit={saveOrUpdatePropiedad} className="space-y-5">
         {/* Dirección */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Dirección
-          </label>
+          <label className="block text-sm font-medium mb-1">Dirección</label>
           <input
             type="text"
             value={direccion}
             onChange={(e) => setDireccion(e.target.value)}
-            className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${errores.direccion ? 'border-red-500' : 'border-gray-300'
-              }`}
-            placeholder="Ingrese la dirección o haga clic en el mapa"
+            className={`w-full border px-4 py-2 rounded-lg ${
+              errores.direccion || errorBackend
+                ? 'border-red-500'
+                : 'border-gray-300'
+            }`}
           />
+
           {errores.direccion && (
             <p className="text-red-600 text-sm mt-1">{errores.direccion}</p>
+          )}
+
+          {errorBackend && (
+            <p className="text-red-600 text-sm mt-1">{errorBackend}</p>
           )}
         </div>
 
         {/* Mapa */}
-        <div className="mt-4">
-          <MapContainer
-            center={[coords.lat, coords.lng]}
-            zoom={14}
-            key={`${coords.lat}-${coords.lng}`}
-            className="h-64 w-full rounded-lg shadow"
-          >
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={[coords.lat, coords.lng]} icon={markerIcon}>
-              <Popup>{direccion || 'Ubicación estimada'}</Popup>
-            </Marker>
-            <LocationMarker setCoords={setCoords} setDireccion={setDireccion} />
-          </MapContainer>
-          <p className="text-gray-500 text-sm mt-2">
-            🔍 Puede escribir una dirección o hacer clic en el mapa para ajustar la ubicación.
-          </p>
-        </div>
+        <MapContainer
+          center={[coords.lat, coords.lng]}
+          zoom={14}
+          key={`${coords.lat}-${coords.lng}`}
+          className="h-64 w-full rounded-lg"
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <Marker position={[coords.lat, coords.lng]} icon={markerIcon}>
+            <Popup>{direccion || 'Ubicación'}</Popup>
+          </Marker>
+          <LocationMarker
+            setCoords={setCoords}
+            setDireccion={setDireccion}
+          />
+        </MapContainer>
 
         {/* Ambientes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ambientes
-          </label>
+          <label className="block text-sm font-medium mb-1">Ambientes</label>
           <input
             type="number"
             value={ambientes}
             onChange={(e) => setAmbientes(e.target.value)}
-            className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${errores.ambientes ? 'border-red-500' : 'border-gray-300'
-              }`}
-            placeholder="Ingrese cantidad de ambientes"
+            className={`w-full border px-4 py-2 rounded-lg ${
+              errores.ambientes ? 'border-red-500' : 'border-gray-300'
+            }`}
           />
           {errores.ambientes && (
-            <p className="text-red-600 text-sm mt-1">{errores.ambientes}</p>
+            <p className="text-red-600 text-sm mt-1">
+              {errores.ambientes}
+            </p>
           )}
         </div>
 
         {/* Estado */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Estado
-          </label>
+          <label className="block text-sm font-medium mb-1">Estado</label>
           <select
             value={estado}
             onChange={(e) => setEstado(e.target.value)}
-            className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${errores.estado ? 'border-red-500' : 'border-gray-300'
-              }`}
+            className={`w-full border px-4 py-2 rounded-lg ${
+              errores.estado ? 'border-red-500' : 'border-gray-300'
+            }`}
           >
             <option value="">Seleccione un estado</option>
             <option value="Disponible">Disponible</option>
@@ -248,16 +260,16 @@ const CrearPropiedad = () => {
         </div>
 
         {/* Botones */}
-        <div className="flex justify-center gap-4 pt-4">
+        <div className="flex justify-center gap-4">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg"
           >
             Guardar
           </button>
           <Link
             to="/listPropiedades"
-            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all"
+            className="bg-red-600 text-white px-6 py-2 rounded-lg"
           >
             Volver
           </Link>

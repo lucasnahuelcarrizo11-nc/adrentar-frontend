@@ -1,11 +1,10 @@
 import axios from "../api/axiosConfig";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
-
 const CLIENTE_BASE_REST_API_URL = `${BASE_URL}/api/alquileres`;
 
 class AlquilerService {
-  crearAlquiler = async (data) => {
+  crearAlquiler(data) {
     const token = localStorage.getItem("token");
 
     return axios.post(`${CLIENTE_BASE_REST_API_URL}/crear`, data, {
@@ -13,7 +12,7 @@ class AlquilerService {
         Authorization: token
       }
     });
-  };
+  }
 
   obtenerMisAlquileres() {
     const token = localStorage.getItem("token");
@@ -25,24 +24,32 @@ class AlquilerService {
     });
   }
 
-  aceptarAlquiler(idAlquiler) {
+  aceptarAlquiler(id) {
     const token = localStorage.getItem("token");
 
-    return axios.put(`${CLIENTE_BASE_REST_API_URL}/${idAlquiler}/aceptar`, null, {
-      headers: {
-        Authorization: token
+    return axios.put(
+      `${CLIENTE_BASE_REST_API_URL}/${id}/aceptar`,
+      null,
+      {
+        headers: {
+          Authorization: token
+        }
       }
-    });
+    );
   }
 
-  rechazarAlquiler(idAlquiler) {
+  rechazarAlquiler(id) {
     const token = localStorage.getItem("token");
 
-    return axios.put(`${CLIENTE_BASE_REST_API_URL}/${idAlquiler}/rechazar`, null, {
-      headers: {
-        Authorization: token
+    return axios.put(
+      `${CLIENTE_BASE_REST_API_URL}/${id}/rechazar`,
+      null,
+      {
+        headers: {
+          Authorization: token
+        }
       }
-    });
+    );
   }
 }
 
