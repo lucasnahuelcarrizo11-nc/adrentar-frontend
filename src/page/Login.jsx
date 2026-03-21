@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import AuthService from "../service/AuthService";
+import { login as loginService } from "../service/AuthService";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -10,18 +10,24 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleLogin = async (e) => {
+const handleLogin = async (e) => {
   e.preventDefault();
+
   try {
-    const data = await AuthService.login(email, contrasenia);
+    const data = await loginService(email, contrasenia);
+
     const { usuario, token, tipo_usuario } = data;
-    login(usuario, token, tipo_usuario); // ✅ ahora incluye tipo_usuario
-    if(tipo_usuario ==="INQUILINO"){
+
+    login(usuario, token, tipo_usuario);
+
+    if (tipo_usuario === "INQUILINO") {
       navigate("/listAlquileres");
-    }else{
+    } else {
       navigate("/listPropiedades");
     }
+
   } catch (err) {
+    console.error("Error login:", err); // 👈 agregá esto para debug
     setError("Credenciales incorrectas");
   }
 };

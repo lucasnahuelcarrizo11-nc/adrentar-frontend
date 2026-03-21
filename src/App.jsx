@@ -21,6 +21,7 @@ import ListAlquileres from './components/alquiler/ListAlquileres';
 import CrearAlquiler from './components/alquiler/CrearAlquiler';
 import ListProveedor from './components/proveedor/ListProveedor';
 import CrearProveedor from './components/proveedor/CrearProveedor';
+import Registro from './components/registro/registro';
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -100,8 +101,9 @@ function App() {
                 <Route path="/editarProveedor/:id" element={<CrearProveedor />} />
 
                 {/* Ruta por defecto cuando logueado */}
-                <Route path="*" element={<Navigate to="/listPropiedades" />} />
+                <Route path="*" element={<Navigate to="/listAlquileres" />} />
 
+              
               </Routes>
             </div>
           </div>
@@ -111,6 +113,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
+  <Route path="/registro" element={<Registro />} />
 
               {/* Si intenta ir a rutas privadas sin login → redirigir */}
               <Route path="*" element={<Navigate to="/login" />} />

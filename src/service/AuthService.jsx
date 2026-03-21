@@ -1,12 +1,10 @@
 import api from "../api/axiosConfig";
 
-const CLIENTE_BASE_REST_API_URL = "/api/auth";
-
-const login = async (email, contrasenia) => {
-  const response = await api.post(
-    `${CLIENTE_BASE_REST_API_URL}/login`,
-    { email, contrasenia }
-  );
+export const login = async (email, contrasenia) => {
+  const response = await api.post("/api/auth/login", {
+    email,
+    contrasenia,
+  });
 
   const { usuario, token, tipo_usuario } = response.data;
 
@@ -26,4 +24,11 @@ const login = async (email, contrasenia) => {
   return { usuario, token: tokenFinal, tipo_usuario };
 };
 
-export default { login };
+export const registrarUsuario = async (data) => {
+  const url =
+    data.tipoUsuario === "PROPIETARIO"
+      ? "/api/propietarios/registrar"
+      : "/api/inquilinos";
+
+  return api.post(url, data);
+};

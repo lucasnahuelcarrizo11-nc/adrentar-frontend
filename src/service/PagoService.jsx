@@ -1,11 +1,10 @@
 import api from "../api/axiosConfig";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
-
 const CLIENTE_BASE_REST_API_URL = `${BASE_URL}/api/pagos`;
 
 const crearPago = async (idAlquiler, mes, anio) => {
-  const response = await axios.post(
+  const response = await api.post(
     `${CLIENTE_BASE_REST_API_URL}/preference`,
     null,
     {
