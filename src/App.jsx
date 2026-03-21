@@ -21,7 +21,7 @@ import ListAlquileres from './components/alquiler/ListAlquileres';
 import CrearAlquiler from './components/alquiler/CrearAlquiler';
 import ListProveedor from './components/proveedor/ListProveedor';
 import CrearProveedor from './components/proveedor/CrearProveedor';
-import Registro from './components/registro/registro';
+import Registro from './components/registro/Registro';
 
 function App() {
   const { isLoggedIn } = useAuth();
