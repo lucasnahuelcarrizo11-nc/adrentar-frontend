@@ -18,7 +18,15 @@ const crearPago = async (idAlquiler, mes, anio) => {
 
   return response.data;
 };
+// 🔥 Este era el método que faltaba
+const obtenerPagosPorAlquiler = async (idAlquiler) => {
+  const response = await api.get(
+    `${CLIENTE_BASE_REST_API_URL}/alquiler/${idAlquiler}`
+  );
+  return response;
+};
 
 export default {
-  crearPago
+  crearPago,
+  obtenerPagosPorAlquiler
 };

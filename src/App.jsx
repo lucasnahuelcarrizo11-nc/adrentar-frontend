@@ -23,6 +23,9 @@ import ListProveedor from './components/proveedor/ListProveedor';
 import CrearProveedor from './components/proveedor/CrearProveedor';
 import Registro from './components/registro/Registro';
 
+import RecuperarContrasenia from "./page/RecuperarContrasenia"
+import ResetContrasenia from './page/ResetContrasenia';
+
 function App() {
   const { isLoggedIn } = useAuth();
 
@@ -103,7 +106,7 @@ function App() {
                 {/* Ruta por defecto cuando logueado */}
                 <Route path="*" element={<Navigate to="/listAlquileres" />} />
 
-              
+
               </Routes>
             </div>
           </div>
@@ -113,8 +116,9 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
-  <Route path="/registro" element={<Registro />} />
-
+              <Route path="/registro" element={<Registro />} />
+              <Route path="/recuperar" element={<RecuperarContrasenia />} />
+              <Route path="/reset-contrasenia" element={<ResetContrasenia />} />
               {/* Si intenta ir a rutas privadas sin login → redirigir */}
               <Route path="*" element={<Navigate to="/login" />} />
             </Routes>

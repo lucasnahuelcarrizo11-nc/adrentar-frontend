@@ -4,9 +4,10 @@ import AlquilerService from "../../service/AlquilerService";
 
 function CrearAlquiler() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-  const token = localStorage.getItem("token");  // ⬅️ IMPORTANTE
+  const token = localStorage.getItem("token");
 
   const [propiedades, setPropiedades] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     idPropiedad: "",
@@ -25,11 +26,16 @@ function CrearAlquiler() {
   }, []);
 
   const handleChange = (e) => {
+    if (loading) return; // bloquea cambios mientras carga
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // evita doble submit
+
+    setLoading(true);
+    setMensaje("");
 
     try {
       const alquilerData = {
@@ -43,7 +49,6 @@ function CrearAlquiler() {
       await AlquilerService.crearAlquiler(alquilerData);
 
       setMensaje("Alquiler creado correctamente");
-
       setForm({
         idPropiedad: "",
         emailInquilino: "",
@@ -51,110 +56,123 @@ function CrearAlquiler() {
         fechaInicio: "",
         fechaFin: "",
       });
-
     } catch (error) {
       if (error.response?.data?.message) {
         setMensaje(error.response.data.message);
       } else {
         setMensaje("Error al crear el alquiler");
       }
+    } finally {
+      setLoading(false); // siempre desbloquea al terminar
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white shadow-lg p-8 rounded-xl mt-10">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        Crear Alquiler
-      </h2>
-
-      {mensaje && (
-        <div className="mb-4 p-3 text-sm text-white bg-blue-500 rounded-md">
-          {mensaje}
+    // Overlay que bloquea toda interacción con la página
+    <div className="relative">
+      {loading && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-700 font-semibold text-base">Creando alquiler...</p>
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="block text-gray-700 font-medium">Propiedad</label>
-          <select
-            name="idPropiedad"
-            value={form.idPropiedad}
-            onChange={handleChange}
-            required
-            className="w-full mt-1 p-3 border rounded-md"
+      <div className="max-w-xl mx-auto bg-white shadow-lg p-8 rounded-xl mt-10">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Crear Alquiler</h2>
+
+        {mensaje && (
+          <div
+            className={`mb-4 p-3 text-sm text-white rounded-md ${
+              mensaje.includes("correctamente") ? "bg-green-500" : "bg-red-500"
+            }`}
           >
-            <option value="">Seleccione una propiedad</option>
+            {mensaje}
+          </div>
+        )}
 
-            {propiedades.map((p) => (
-              <option key={p.idPropiedad} value={p.idPropiedad}>
-                {p.direccion}
-              </option>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-gray-700 font-medium">Propiedad</label>
+            <select
+              name="idPropiedad"
+              value={form.idPropiedad}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="w-full mt-1 p-3 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">Seleccione una propiedad</option>
+              {propiedades.map((p) => (
+                <option key={p.idPropiedad} value={p.idPropiedad}>
+                  {p.direccion}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            ))}
-          </select>
-        </div>
+          <div>
+            <label className="block text-gray-700 font-medium">Email del Inquilino</label>
+            <input
+              type="email"
+              name="emailInquilino"
+              value={form.emailInquilino}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="w-full mt-1 p-3 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Email del Inquilino
-          </label>
-          <input
-            type="email"
-            name="emailInquilino"
-            value={form.emailInquilino}
-            onChange={handleChange}
-            required
-            className="w-full mt-1 p-3 border rounded-md"
-          />
-        </div>
+          <div>
+            <label className="block text-gray-700 font-medium">Precio</label>
+            <input
+              type="number"
+              name="precio"
+              value={form.precio}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="w-full mt-1 p-3 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">Precio</label>
-          <input
-            type="number"
-            name="precio"
-            value={form.precio}
-            onChange={handleChange}
-            required
-            className="w-full mt-1 p-3 border rounded-md"
-          />
-        </div>
+          <div>
+            <label className="block text-gray-700 font-medium">Fecha de Inicio</label>
+            <input
+              type="date"
+              name="fechaInicio"
+              value={form.fechaInicio}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="w-full mt-1 p-3 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Fecha de Inicio
-          </label>
-          <input
-            type="date"
-            name="fechaInicio"
-            value={form.fechaInicio}
-            onChange={handleChange}
-            required
-            className="w-full mt-1 p-3 border rounded-md"
-          />
-        </div>
+          <div>
+            <label className="block text-gray-700 font-medium">Fecha de Fin</label>
+            <input
+              type="date"
+              name="fechaFin"
+              value={form.fechaFin}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              className="w-full mt-1 p-3 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Fecha de Fin
-          </label>
-          <input
-            type="date"
-            name="fechaFin"
-            value={form.fechaFin}
-            onChange={handleChange}
-            required
-            className="w-full mt-1 p-3 border rounded-md"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg"
-        >
-          Crear Alquiler
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors"
+          >
+            {loading ? "Creando..." : "Crear Alquiler"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

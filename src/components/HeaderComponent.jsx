@@ -22,18 +22,22 @@ const HeaderComponent = () => {
         {/* ⭐ Solo PROPIETARIO ve estas opciones */}
         {tipoUsuario === "PROPIETARIO" && (
           <>
-            <Link to="/listPropietarios" className="hover:text-indigo-400">
-              Propietarios
-            </Link>
-            <Link to="/listInquilino" className="hover:text-indigo-400">
-              Inquilinos
-            </Link>
+          
             <Link to="/listPropiedades" className="hover:text-indigo-400">
               Propiedades
             </Link>
           </>
         )}
-
+        {tipoUsuario === "ADMIN" && (
+          <>
+            <Link to="/listInquilino" className="hover:text-indigo-400">
+              Inquilinos
+            </Link>
+              <Link to="/listPropietarios" className="hover:text-indigo-400">
+              Propietarios
+            </Link>
+          </>
+        )}
 
 
         {/* ⭐ TODOS LOS USUARIOS VEN ALQUILERES */}

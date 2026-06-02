@@ -32,3 +32,11 @@ export const registrarUsuario = async (data) => {
 
   return api.post(url, data);
 };
+
+export const solicitarRecuperacion = async (email) => {
+  return api.post("/api/auth/recuperar-contrasenia", { email });
+};
+
+export const resetContrasenia = async (token, nuevaContrasenia) => {
+  return api.post("/api/auth/reset-contrasenia", { token, nuevaContrasenia });
+};
