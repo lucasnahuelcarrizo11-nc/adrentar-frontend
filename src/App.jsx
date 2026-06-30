@@ -4,7 +4,6 @@ import { useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 import HeaderComponent from './components/HeaderComponent';
 import HeaderLogout from './components/HeaderLogout';
 
@@ -22,110 +21,80 @@ import CrearAlquiler from './components/alquiler/CrearAlquiler';
 import ListProveedor from './components/proveedor/ListProveedor';
 import CrearProveedor from './components/proveedor/CrearProveedor';
 import Registro from './components/registro/Registro';
-
-import RecuperarContrasenia from "./page/RecuperarContrasenia"
+import RecuperarContrasenia from "./page/RecuperarContrasenia";
 import ResetContrasenia from './page/ResetContrasenia';
 
 function App() {
   const { isLoggedIn } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <BrowserRouter>
+    <BrowserRouter>
+      <ToastContainer position="top-right" autoClose={3000} />
 
-        {/* Header público cuando NO está logueado */}
-        {!isLoggedIn && <HeaderLogout />}
+      {isLoggedIn ? (
+        // ── Layout autenticado ──────────────────────────────
+        <div style={{
+          display: "flex",
+          height: "100vh",
+          overflow: "hidden",
+          background: "#f6f2ee",
+          fontFamily: "Inter, sans-serif",
+        }}>
+          {/* Sidebar fijo */}
+          <HeaderComponent />
 
-        {/* Si está logueado → sidebar + rutas privadas */}
-        {isLoggedIn ? (
-          <div className="flex flex-1">
-            <div className="w-64 bg-gray-800 text-white">
-              <HeaderComponent />
-            </div>
-
-            <div className="flex-1 p-6">
-              <Routes>
-
-                {/* PROPIETARIOS */}
-                <Route
-                  path="/listPropietarios"
-                  element={<ListPropietario />}
-                />
-                <Route
-                  path="/crearPropietario"
-                  element={<CrearPropietario />}
-                />
-                <Route
-                  path="/editPropietario/:id"
-                  element={<CrearPropietario />}
-                />
-
-                {/* PROPIEDADES */}
-                <Route
-                  path="/listPropiedades"
-                  element={<ListPropiedades />}
-                />
-                <Route
-                  path="/crearPropiedad"
-                  element={<CrearPropiedad />}
-                />
-                <Route
-                  path="/editPropiedad/:id"
-                  element={<CrearPropiedad />}
-                />
-
-                {/* INQUILINOS */}
-                <Route
-                  path="/listInquilino"
-                  element={<ListInquilino />}
-                />
-                <Route
-                  path="/crearInquilino"
-                  element={<CrearInquilino />}
-                />
-                <Route
-                  path="/editInquilino/:id"
-                  element={<CrearInquilino />}
-                />
-
-                {/* ALQUILERES */}
-                <Route
-                  path="/crearAlquiler"
-                  element={<CrearAlquiler />}
-                />
-                <Route
-                  path="/listAlquileres"
-                  element={<ListAlquileres />}
-                />
-
-                {/* Proveedores */}
-                <Route path="/listProveedor" element={<ListProveedor />} />
-                <Route path="/crearProveedor" element={<CrearProveedor />} />
-                <Route path="/editarProveedor/:id" element={<CrearProveedor />} />
-
-                {/* Ruta por defecto cuando logueado */}
-                <Route path="*" element={<Navigate to="/listAlquileres" />} />
-
-
-              </Routes>
-            </div>
-          </div>
-        ) : (
-          /* Rutas públicas cuando NO está logueado */
-          <div className="flex-1">
+          {/* Contenido principal scrolleable */}
+          <div style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/registro" element={<Registro />} />
-              <Route path="/recuperar" element={<RecuperarContrasenia />} />
-              <Route path="/reset-contrasenia" element={<ResetContrasenia />} />
-              {/* Si intenta ir a rutas privadas sin login → redirigir */}
-              <Route path="*" element={<Navigate to="/login" />} />
+              {/* PROPIETARIOS */}
+              <Route path="/listPropietarios"    element={<ListPropietario />} />
+              <Route path="/crearPropietario"    element={<CrearPropietario />} />
+              <Route path="/editPropietario/:id" element={<CrearPropietario />} />
+
+              {/* PROPIEDADES */}
+              <Route path="/listPropiedades"    element={<ListPropiedades />} />
+              <Route path="/CrearPropiedad"     element={<CrearPropiedad />} />
+              <Route path="/editPropiedad/:id"  element={<CrearPropiedad />} />
+
+              {/* INQUILINOS */}
+              <Route path="/listInquilino"    element={<ListInquilino />} />
+              <Route path="/crearInquilino"   element={<CrearInquilino />} />
+              <Route path="/editInquilino/:id" element={<CrearInquilino />} />
+
+              {/* ALQUILERES */}
+              <Route path="/CrearAlquiler"  element={<CrearAlquiler />} />
+              <Route path="/listAlquileres" element={<ListAlquileres />} />
+
+              {/* PROVEEDORES */}
+              <Route path="/listProveedor"         element={<ListProveedor />} />
+              <Route path="/crearProveedor"        element={<CrearProveedor />} />
+              <Route path="/editarProveedor/:id"   element={<CrearProveedor />} />
+
+              {/* Default */}
+              <Route path="*" element={<Navigate to="/listAlquileres" />} />
             </Routes>
           </div>
-        )}
-      </BrowserRouter>
-    </div>
+        </div>
+      ) : (
+        // ── Rutas públicas ──────────────────────────────────
+        <div style={{ minHeight: "100vh", background: "#f6f2ee" }}>
+          {!isLoggedIn && <HeaderLogout />}
+          <Routes>
+            <Route path="/"                  element={<Home />} />
+            <Route path="/login"             element={<Login />} />
+            <Route path="/registro"          element={<Registro />} />
+            <Route path="/recuperar"         element={<RecuperarContrasenia />} />
+            <Route path="/reset-contrasenia" element={<ResetContrasenia />} />
+            <Route path="*"                  element={<Navigate to="/login" />} />
+          </Routes>
+        </div>
+      )}
+    </BrowserRouter>
   );
 }
 
