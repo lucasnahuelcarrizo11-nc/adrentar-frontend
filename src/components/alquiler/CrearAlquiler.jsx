@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import PropiedadService from "../../service/PropiedadService";
 import AlquilerService from "../../service/AlquilerService";
+import ModalContrato from "./ModalContrato";
 
 function CrearAlquiler() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   const token = localStorage.getItem("token");
 
+  const [mostrarModalContrato, setMostrarModalContrato] = useState(false);
+  const [alquilerCreado, setAlquilerCreado] = useState(null);
   const [propiedades, setPropiedades] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -26,13 +29,13 @@ function CrearAlquiler() {
   }, []);
 
   const handleChange = (e) => {
-    if (loading) return; // bloquea cambios mientras carga
+    if (loading) return;
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loading) return; // evita doble submit
+    if (loading) return;
 
     setLoading(true);
     setMensaje("");
@@ -46,9 +49,10 @@ function CrearAlquiler() {
         fechaFin: form.fechaFin,
       };
 
-      await AlquilerService.crearAlquiler(alquilerData);
+      const resultado = await AlquilerService.crearAlquiler(alquilerData);
+      setAlquilerCreado(resultado.data);
+      setMostrarModalContrato(true);
 
-      setMensaje("Alquiler creado correctamente");
       setForm({
         idPropiedad: "",
         emailInquilino: "",
@@ -63,12 +67,11 @@ function CrearAlquiler() {
         setMensaje("Error al crear el alquiler");
       }
     } finally {
-      setLoading(false); // siempre desbloquea al terminar
+      setLoading(false);
     }
   };
 
   return (
-    // Overlay que bloquea toda interacción con la página
     <div className="relative">
       {loading && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -173,6 +176,20 @@ function CrearAlquiler() {
           </button>
         </form>
       </div>
+
+      {mostrarModalContrato && alquilerCreado && (
+        <ModalContrato
+          alquiler={alquilerCreado}
+          propietario={{
+            email: usuario.email,
+            nombre: `${usuario.nombre} ${usuario.apellido}`,
+          }}
+          onCerrar={() => {
+            setMostrarModalContrato(false);
+            setMensaje("Alquiler creado correctamente");
+          }}
+        />
+      )}
     </div>
   );
 }

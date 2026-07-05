@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import HeaderComponent from './components/HeaderComponent';
 import HeaderLogout from './components/HeaderLogout';
 
+
 import Home from './page/Home';
 import Login from './page/Login';
 
@@ -23,6 +24,8 @@ import CrearProveedor from './components/proveedor/CrearProveedor';
 import Registro from './components/registro/Registro';
 import RecuperarContrasenia from "./page/RecuperarContrasenia";
 import ResetContrasenia from './page/ResetContrasenia';
+import FirmaCompletada from "./page/FirmaCompletada";
+
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -69,11 +72,14 @@ function App() {
               {/* ALQUILERES */}
               <Route path="/CrearAlquiler"  element={<CrearAlquiler />} />
               <Route path="/listAlquileres" element={<ListAlquileres />} />
+              <Route path="/firma-completada" element={<FirmaCompletada />} />
+
 
               {/* PROVEEDORES */}
               <Route path="/listProveedor"         element={<ListProveedor />} />
               <Route path="/crearProveedor"        element={<CrearProveedor />} />
               <Route path="/editarProveedor/:id"   element={<CrearProveedor />} />
+
 
               {/* Default */}
               <Route path="*" element={<Navigate to="/listAlquileres" />} />
