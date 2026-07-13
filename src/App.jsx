@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import HeaderComponent from './components/HeaderComponent';
 import HeaderLogout from './components/HeaderLogout';
+import AuditoriaAlquiler from "./components/alquiler/AuditoriaAlquiler";
 
 
 import Home from './page/Home';
@@ -73,6 +74,7 @@ function App() {
               <Route path="/CrearAlquiler"  element={<CrearAlquiler />} />
               <Route path="/listAlquileres" element={<ListAlquileres />} />
               <Route path="/firma-completada" element={<FirmaCompletada />} />
+              <Route path="/auditoria/:idAlquiler" element={<AuditoriaAlquiler />} />
 
 
               {/* PROVEEDORES */}

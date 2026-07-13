@@ -6,6 +6,7 @@ const authHeaders = () => ({
 });
 
 export const enviarContrato = async ({
+  idAlquiler,
   propietarioEmail,
   propietarioNombre,
   inquilinoEmail,
@@ -17,6 +18,7 @@ export const enviarContrato = async ({
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({
+      idAlquiler,
       propietarioEmail,
       propietarioNombre,
       inquilinoEmail,
@@ -53,5 +55,14 @@ export const obtenerUrlFirma = async ({ envelopeId, signerEmail, signerName }) =
     throw new Error(errorBody);
   }
 
+  return res.json();
+};
+
+export const obtenerEnvelopeIdAlquiler = async (idAlquiler) => {
+  const res = await fetch(`${API_BASE}/api/docusign/envelope/${idAlquiler}`, {
+    headers: authHeaders(),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error("Error al obtener envelope");
   return res.json();
 };

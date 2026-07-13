@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import AlquilerService from "../../service/AlquilerService";
 import DocumentoService from "../../service/DocumentoService";
 import PagoService from "../../service/PagoService";
 import ReporteService from "../../service/ReporteService";
+import ModalFirmaInquilino from "./ModalFirmaInquilino";
+import ModalContrato from "./ModalContrato";
+
 
 /* ── Utils ───────────────────────────────────────────────── */
+
+
 const generarMesesAlquiler = (fechaInicio, fechaFin) => {
   const inicio = new Date(fechaInicio);
   const fin = new Date(fechaFin);
@@ -30,17 +35,17 @@ const formatearFecha = (fecha) =>
 const formatearFechaHora = (fecha) =>
   fecha
     ? new Date(fecha).toLocaleString("es-AR", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit",
-      })
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    })
     : "-";
 
 /* ── Badges ──────────────────────────────────────────────── */
 const ESTADO_BADGE = {
-  PENDIENTE:  { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
-  ACEPTADO:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-  RECHAZADO:  { bg: "#fef2f2", color: "#b91c1c", border: "#fecaca" },
-  CANCELADO:  { bg: "#f3f4f6", color: "#6b7280", border: "#e5e7eb" },
+  PENDIENTE: { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
+  ACEPTADO: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
+  RECHAZADO: { bg: "#fef2f2", color: "#b91c1c", border: "#fecaca" },
+  CANCELADO: { bg: "#f3f4f6", color: "#6b7280", border: "#e5e7eb" },
 };
 
 const EstadoBadge = ({ estado }) => {
@@ -58,9 +63,9 @@ const EstadoBadge = ({ estado }) => {
 };
 
 const REPORTE_BADGE = {
-  PENDIENTE:   { bg: "#fef2f2", color: "#b91c1c", border: "#fecaca", label: "Pendiente" },
+  PENDIENTE: { bg: "#fef2f2", color: "#b91c1c", border: "#fecaca", label: "Pendiente" },
   EN_REVISION: { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "En revisión" },
-  RESUELTO:    { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0", label: "Resuelto" },
+  RESUELTO: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0", label: "Resuelto" },
 };
 
 const ReporteBadge = ({ estado }) => {
@@ -78,12 +83,10 @@ const ReporteBadge = ({ estado }) => {
 
 /* ── Estilos compartidos ─────────────────────────────────── */
 const S = {
-  // botón de acción de la tabla (ojo, lápiz, etc.)
   iconBtn: (color = "#6c625c", hoverBg = "#f6f2ee", hoverColor = "#b07a5e") => ({
     base: { padding: "10px", borderRadius: "12px", border: "none", background: "transparent", color, cursor: "pointer", transition: "all 0.2s", display: "inline-flex", alignItems: "center", justifyContent: "center" },
     hover: { background: hoverBg, color: hoverColor },
   }),
-  // botón de acción con texto dentro de la fila expandida
   actionBtn: (bg, hoverBg, color = "white") => ({
     padding: "8px 16px", borderRadius: "12px", border: "none",
     background: bg, color, fontSize: "12px", fontWeight: "600",
@@ -105,40 +108,46 @@ const S = {
 };
 
 /* ── SVG Icons ───────────────────────────────────────────── */
+const IconCamera = () => (
+  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 17a4 4 0 100-8 4 4 0 000 8z" />
+  </svg>
+);
 const IconEye = () => (
   <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
   </svg>
 );
 const IconCheck = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
   </svg>
 );
 const IconX = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
 const IconCard = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
   </svg>
 );
 const IconDoc = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
   </svg>
 );
 const IconFlag = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 21V4m0 0l9-1 9 1v11l-9-1-9 1V4z"/>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 21V4m0 0l9-1 9 1v11l-9-1-9 1V4z" />
   </svg>
 );
 const IconWarn = () => (
   <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
   </svg>
 );
 
@@ -215,22 +224,28 @@ const PanelExpandido = ({ accentBg, accentBorder, children }) => (
    COMPONENTE PRINCIPAL
 ════════════════════════════════════════════════════════════ */
 const ListAlquileres = () => {
-  const [alquileres, setAlquileres]       = useState([]);
-  const [docs, setDocs]                   = useState([]);
-  const [archivo, setArchivo]             = useState(null);
-  const [pagos, setPagos]                 = useState({});
-  const [reportes, setReportes]           = useState({});
-  const [idAlquilerPendiente, setIdAlquilerPendiente] = useState(null);
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const navigate = useNavigate();
 
-  const [nuevoReporte, setNuevoReporte]   = useState({ titulo: "", descripcion: "" });
+  const [modalContratoPosteriori, setModalContratoPosteriori] = useState(null);
+
+  const [alquileres, setAlquileres] = useState([]);
+  const [docs, setDocs] = useState([]);
+  const [archivo, setArchivo] = useState(null);
+  const [pagos, setPagos] = useState({});
+  const [reportes, setReportes] = useState({});
+  const [idAlquilerPendiente, setIdAlquilerPendiente] = useState(null);
+  const [modalFirmaInquilino, setModalFirmaInquilino] = useState(null);
+
+  const [nuevoReporte, setNuevoReporte] = useState({ titulo: "", descripcion: "" });
   const [enviandoReporte, setEnviandoReporte] = useState(false);
 
-  const [modalCancelacion, setModalCancelacion]   = useState(null);
-  const [modalRechazo, setModalRechazo]           = useState(null);
-  const [alquilerExpandidoPagos, setAlquilerExpandidoPagos]       = useState(null);
-  const [alquilerExpandidoDocs, setAlquilerExpandidoDocs]         = useState(null);
+  const [modalCancelacion, setModalCancelacion] = useState(null);
+  const [modalRechazo, setModalRechazo] = useState(null);
+  const [alquilerExpandidoPagos, setAlquilerExpandidoPagos] = useState(null);
+  const [alquilerExpandidoDocs, setAlquilerExpandidoDocs] = useState(null);
   const [alquilerExpandidoReportes, setAlquilerExpandidoReportes] = useState(null);
-  const [animando, setAnimando]           = useState(null);
+  const [animando, setAnimando] = useState(null);
 
   const rol = (localStorage.getItem("tipo_usuario") || "").toUpperCase();
 
@@ -243,7 +258,7 @@ const ListAlquileres = () => {
     const externalReference = params.get("external_reference");
     if (status && paymentId) {
       window.history.replaceState({}, "", window.location.pathname);
-      if (status === "approved")  toast.success("¡Pago aprobado! Actualizando...");
+      if (status === "approved") toast.success("¡Pago aprobado! Actualizando...");
       else if (status === "rejected") toast.error("El pago fue rechazado");
       else toast.info("El pago está pendiente de confirmación");
       if (externalReference) {
@@ -398,6 +413,11 @@ const ListAlquileres = () => {
     } catch { toast.error("Error al abrir documento"); }
   };
 
+  /* Auditoría → navega a página propia */
+  const irAAuditoria = (alq) => {
+    navigate(`/auditoria/${alq.idAlquiler}`, { state: { alquiler: alq } });
+  };
+
   /* ── RENDER ────────────────────────────────────────────── */
   return (
     <div style={{ flex: 1, overflowY: "auto", padding: "2rem", background: "#f6f2ee", fontFamily: "Inter, sans-serif", position: "relative" }}>
@@ -440,7 +460,7 @@ const ListAlquileres = () => {
               onMouseLeave={(e) => (e.currentTarget.style.background = "#3b3735")}
             >
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>
               Nuevo Alquiler
             </Link>
@@ -518,7 +538,7 @@ const ListAlquileres = () => {
                             {alq.estado === "PENDIENTE" && rol === "INQUILINO" && (
                               <>
                                 <HoverBtn
-                                  onClick={() => aceptarAlquiler(alq.idAlquiler)}
+                                  onClick={() => setModalFirmaInquilino(alq)}
                                   style={{ ...S.actionBtn("#16a34a", "#15803d"), fontSize: "11px" }}
                                   hoverStyle={{ opacity: 0.88 }}
                                   title="Aceptar"
@@ -536,9 +556,34 @@ const ListAlquileres = () => {
                               </>
                             )}
 
-                            {/* Aceptado → pagos / docs / reportes / cancelar */}
+                            {/* Aceptado → pagos / docs / reportes / auditoría / cancelar */}
                             {alq.estado === "ACEPTADO" && (
                               <>
+                                <HoverBtn
+                                  onClick={() => irAAuditoria(alq)}
+                                  style={{ ...S.actionBtn("#f6f2ee", "#3b3735", "#3b3735"), fontSize: "11px", border: "1px solid #e8e2dc" }}
+                                  hoverStyle={{ background: "#3b3735", color: "white", border: "1px solid #3b3735" }}
+                                  title="Auditoría"
+                                >
+                                  <IconCamera /> Auditoría
+                                </HoverBtn>
+
+                                {rol === "PROPIETARIO" && !alq.envelopeId && (
+                                  <HoverBtn
+                                    onClick={() => setModalContratoPosteriori(alq)}
+                                    style={{ ...S.actionBtn("#4f46e5", "#4338ca"), fontSize: "11px" }}
+                                    hoverStyle={{ opacity: 0.88 }}
+                                    title="Generar contrato"
+                                  >
+                                    📋 Contrato
+                                  </HoverBtn>
+                                )}
+
+                                {rol === "PROPIETARIO" && alq.envelopeId && (
+                                  <span style={{ fontSize: "11px", color: "#15803d", fontWeight: "600", padding: "8px 4px" }}>
+                                    ✔ Contrato enviado
+                                  </span>
+                                )}
                                 <HoverBtn
                                   onClick={() => togglePagos(alq.idAlquiler)}
                                   style={{ ...S.actionBtn(alquilerExpandidoPagos === alq.idAlquiler ? "#3b3735" : "#f6f2ee", "#3b3735", alquilerExpandidoPagos === alq.idAlquiler ? "white" : "#3b3735"), fontSize: "11px", border: "1px solid #e8e2dc" }}
@@ -614,7 +659,6 @@ const ListAlquileres = () => {
                             🚩 Reportes de la propiedad
                           </p>
 
-                          {/* Formulario — solo inquilino */}
                           {rol === "INQUILINO" && (
                             <div style={{ background: "white", border: "1px solid #f5d5c8", borderRadius: "16px", padding: "20px", marginBottom: "20px" }}>
                               <p style={{ fontSize: "12px", fontWeight: "700", color: "#b07a5e", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>Reportar un problema</p>
@@ -647,7 +691,6 @@ const ListAlquileres = () => {
                             </div>
                           )}
 
-                          {/* Lista de reportes */}
                           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                             {(reportes[alq.idAlquiler] || []).length === 0 ? (
                               <p style={{ fontSize: "13px", color: "#6c625c" }}>No hay reportes para este alquiler.</p>
@@ -734,6 +777,30 @@ const ListAlquileres = () => {
         </div>
       </div>
 
+
+      {modalContratoPosteriori && (
+        <ModalContrato
+          alquiler={{
+            idAlquiler: modalContratoPosteriori.idAlquiler,
+            direccionPropiedad: modalContratoPosteriori.direccionPropiedad,
+            emailInquilino: modalContratoPosteriori.emailInquilino,
+            nombreInquilino: `${modalContratoPosteriori.nombreInquilino} ${modalContratoPosteriori.apellidoInquilino}`,
+            fechaInicio: modalContratoPosteriori.fechaInicio,
+            fechaFin: modalContratoPosteriori.fechaFin,
+          }}
+          propietario={{
+            email: usuario.email,
+            nombre: `${usuario.nombre} ${usuario.apellido}`,
+          }}
+          onCerrar={() => {
+            setModalContratoPosteriori(null);
+            cargarAlquileres(); // recargar para mostrar ✔ Contrato enviado
+          }}
+        />
+      )}
+
+
+
       {/* Modal Rechazo */}
       {modalRechazo && (
         <ConfirmModal
@@ -757,6 +824,21 @@ const ListAlquileres = () => {
           onCancel={() => setModalCancelacion(null)}
         />
       )}
+
+      {/* Modal Firma Inquilino */}
+      {modalFirmaInquilino && (
+        <ModalFirmaInquilino
+          alquiler={modalFirmaInquilino}
+          inquilino={{
+            email: usuario.email,
+            nombre: `${usuario.nombre} ${usuario.apellido}`,
+          }}
+          onConfirmar={() => aceptarAlquiler(modalFirmaInquilino.idAlquiler)}
+          onCerrar={() => setModalFirmaInquilino(null)}
+        />
+      )}
+
+
 
     </div>
   );
