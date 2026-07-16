@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ProveedorService from "../../service/ProveedorService";
 import { useAuth } from "../../context/AuthContext";
+import { StarRatingDisplay } from "./StartRating";
+import ResenasModal from "../ResenasModal";
 
 /* ── Icon Box ────────────────────────────────────────────── */
 const IconBox = ({ bg = "#f3ece6", color = "#b07a5e", children }) => (
@@ -88,7 +90,7 @@ const HoverBtn = ({ style, hoverStyle, children, ...props }) => {
 };
 
 /* ── Fila Proveedor ──────────────────────────────────────── */
-const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar }) => {
+const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar, onVerResenas }) => {
   const [hovered, setHovered] = useState(false);
 
   const celdasAdmin = esAdmin ? (
@@ -202,6 +204,20 @@ const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar }) => {
         </div>
       </td>
 
+      {/* Puntuación */}
+      <td style={{ padding: "20px 24px" }}>
+        <button
+          onClick={() => onVerResenas(p)}
+          style={{
+            border: "none", background: "transparent", cursor: "pointer",
+            padding: 0, fontFamily: "inherit",
+          }}
+          title="Ver reseñas"
+        >
+          <StarRatingDisplay promedio={p.promedioPuntuacion} cantidad={p.cantidadResenas} />
+        </button>
+      </td>
+
       {celdasAdmin}
     </tr>
   );
@@ -213,6 +229,7 @@ const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar }) => {
 const ListProveedor = () => {
   const { usuario } = useAuth();
   const [proveedores, setProveedores] = useState([]);
+  const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
 
   const esAdmin = usuario?.tipo_usuario?.toUpperCase() === "ADMIN";
 
@@ -247,9 +264,9 @@ const ListProveedor = () => {
     }
   };
 
-  const colSpanTotal = esAdmin ? 7 : 5;
+  const colSpanTotal = esAdmin ? 8 : 6;
   const headers = [
-    "Nombre", "Especialidad", "Zona", "Teléfono", "Email",
+    "Nombre", "Especialidad", "Zona", "Teléfono", "Email", "Puntuación",
     ...(esAdmin ? ["Activo", "Acciones"] : []),
   ];
 
@@ -349,6 +366,7 @@ const ListProveedor = () => {
                       esAdmin={esAdmin}
                       onToggle={toggleActivo}
                       onEliminar={eliminarProveedor}
+                      onVerResenas={setProveedorSeleccionado}
                     />
                   ))
                 )}
@@ -377,6 +395,14 @@ const ListProveedor = () => {
         </div>
 
       </div>
+
+      {proveedorSeleccionado ? (
+        <ResenasModal
+          proveedor={proveedorSeleccionado}
+          onClose={() => setProveedorSeleccionado(null)}
+          onResenaCreada={listarProveedores}
+        />
+      ) : null}
     </div>
   );
 };

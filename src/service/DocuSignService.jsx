@@ -1,63 +1,45 @@
 const API_BASE = import.meta.env.VITE_API_URL;
-
+ 
 const authHeaders = () => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
-
-export const enviarContrato = async ({
-  idAlquiler,
-  propietarioEmail,
-  propietarioNombre,
-  inquilinoEmail,
-  inquilinoNombre,
-  documentBase64,
-  documentName,
-}) => {
+ 
+export const enviarContrato = async ({ idAlquiler }) => {
   const res = await fetch(`${API_BASE}/api/docusign/send-contrato`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({
-      idAlquiler,
-      propietarioEmail,
-      propietarioNombre,
-      inquilinoEmail,
-      inquilinoNombre,
-      documentBase64,
-      documentName,
-    }),
+    body: JSON.stringify({ idAlquiler }),
   });
-
+ 
   if (!res.ok) {
     const errorBody = await res.text();
     console.error("Error backend send-contrato:", errorBody);
     throw new Error(errorBody);
   }
-
+ 
   return res.json();
 };
-
-export const obtenerUrlFirma = async ({ envelopeId, signerEmail, signerName }) => {
+ 
+export const obtenerUrlFirma = async ({ idAlquiler, returnUrl }) => {
   const res = await fetch(`${API_BASE}/api/docusign/embedded-url`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({
-      envelopeId,
-      signerEmail,
-      signerName,
-      returnUrl: `${window.location.origin}/firma-completada`,
+      idAlquiler,
+      returnUrl: returnUrl || `${window.location.origin}/firma-completada`,
     }),
   });
-
+ 
   if (!res.ok) {
     const errorBody = await res.text();
     console.error("Error backend embedded-url:", errorBody);
     throw new Error(errorBody);
   }
-
+ 
   return res.json();
 };
-
+ 
 export const obtenerEnvelopeIdAlquiler = async (idAlquiler) => {
   const res = await fetch(`${API_BASE}/api/docusign/envelope/${idAlquiler}`, {
     headers: authHeaders(),

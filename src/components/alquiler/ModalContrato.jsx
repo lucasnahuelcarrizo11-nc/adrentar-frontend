@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { enviarContrato, obtenerUrlFirma } from "../../service/DocuSignService";
 
-const PDF_TEST =
-  "JVBERi0xLjQKJeLjz9MKNSAwIG9iago8PAovVHlwZSAvUGFnZQovUGFyZW50IDQgMCBSCi9NZWRpYUJveCBbMCAwIDYxMiA3OTJdCi9Db250ZW50cyA2IDAgUgovUmVzb3VyY2VzIDw8Ci9Gb250IDw8Ci9GMSA3IDAgUgo+Pgo+Pgo+PgplbmRvYmoKNiAwIG9iago8PAovTGVuZ3RoIDIwMAo+PgpzdHJlYW0KQlQKL0YxIDEyIFRmCjUwIDcwMCBUZAooQ09OVFJBVE8gREUgQUxRVUlMRVIpIFRqCjAgLTMwIFRkCihQcm9waWVkYWQ6IFVzcGFsbGF0YSAxMjMpIFRqCjAgLTMwIFRkCihJbnF1aWxpbm86IG51ZXZvIGlucXVpbGlubykgVGoKMCAtMzAgVGQKKFByb3BpZXRhcmlvOiBudWV2byBwcm9waWV0YXJpbykgVGoKMCAtMTAwIFRkCigvZmlybWEtcHJvcGlldGFyaW8vKSBUagowIC0xMDAgVGQKKC9maXJtYS1pbnF1aWxpbm8vKSBUagpFVAplbmRzdHJlYW0KZW5kb2JqCjcgMCBvYmoKPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+CmVuZG9iago0IDAgb2JqCjw8Ci9UeXBlIC9QYWdlcwovS2lkcyBbNSAwIFJdCi9Db3VudCAxCj4+CmVuZG9iagoxIDAgb2JqCjw8Ci9UeXBlIC9DYXRhbG9nCi9QYWdlcyA0IDAgUgo+PgplbmRvYmoKeHJlZgowIDgKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwNDU4IDAwMDAwIG4gCjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwNDAxIDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKMDAwMDAwMDE1MCAwMDAwMCBuIAowMDAwMDAwMzU0IDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgOAovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKNTA3CiUlRU9GCg==";
-
-export default function ModalContrato({ alquiler, propietario, onCerrar }) {
+export default function ModalContrato({ alquiler, onCerrar }) {
   const [estado, setEstado] = useState("pregunta");
   const [signingUrl, setSigningUrl] = useState(null);
   const [error, setError] = useState("");
@@ -12,20 +9,17 @@ export default function ModalContrato({ alquiler, propietario, onCerrar }) {
   const handleGenerar = async () => {
     setEstado("cargando");
     try {
+      // El backend genera el PDF del contrato con los datos reales del alquiler.
       const { envelopeId } = await enviarContrato({
         idAlquiler: alquiler.idAlquiler,
-        propietarioEmail: propietario.email,
-        propietarioNombre: propietario.nombre,
-        inquilinoEmail: alquiler.emailInquilino,
-        inquilinoNombre: alquiler.nombreInquilino,
-        documentBase64: PDF_TEST,
-        documentName: `Contrato - ${alquiler.direccionPropiedad}`.substring(0, 70),
       });
 
+      // El backend recalcula el email/nombre del propietario desde la misma
+      // entidad Alquiler, así garantizamos que coincidan exactamente con el
+      // recipient que se usó al crear el envelope.
       const { signingUrl } = await obtenerUrlFirma({
-        envelopeId,
-        signerEmail: propietario.email,
-        signerName: propietario.nombre,
+        idAlquiler: alquiler.idAlquiler,
+        returnUrl: window.location.href,
       });
 
       setSigningUrl(signingUrl);
