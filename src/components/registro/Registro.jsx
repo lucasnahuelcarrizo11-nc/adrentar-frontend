@@ -270,6 +270,7 @@ export default function Registro() {
                 {[
                   { value: "PROPIETARIO", label: "Propietario" },
                   { value: "INQUILINO",   label: "Inquilino"   },
+                  {value: "PROVEEDOR",   label: "Proveedor"  }
                 ].map(({ value, label }) => {
                   const selected = formData.tipoUsuario === value;
                   return (

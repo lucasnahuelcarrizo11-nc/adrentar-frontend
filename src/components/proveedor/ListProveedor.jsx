@@ -155,7 +155,7 @@ const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar, onVerResenas }) => {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <IconBox><IconUser /></IconBox>
           <span style={{ fontSize: "14px", fontWeight: "700", color: "#3b3735" }}>
-            {p.nombreCompleto}
+            {p.nombre}
           </span>
         </div>
       </td>

@@ -36,7 +36,7 @@ const NAV_ADMIN = [
   },
 ];
 
-const NAV_TODOS = [
+const NAV_ALQUILERES = [
   {
     to: "/listAlquileres",
     label: "Alquileres",
@@ -46,6 +46,9 @@ const NAV_TODOS = [
       </svg>
     ),
   },
+];
+
+const NAV_TODOS = [
   {
     to: "/listProveedor",
     label: "Proveedores",
@@ -88,6 +91,7 @@ const NavItem = ({ to, label, icon }) => {
 ════════════════════════════════════════════════════════════ */
 const HeaderComponent = () => {
   const { logout, usuario } = useAuth();
+  const location = useLocation();
   const tipoUsuario = (localStorage.getItem("tipo_usuario") || "").toUpperCase();
 
   const iniciales = [usuario?.nombre?.[0], usuario?.apellido?.[0]]
@@ -102,8 +106,11 @@ const HeaderComponent = () => {
   const navItems = [
     ...(tipoUsuario === "PROPIETARIO" ? NAV_PROPIETARIO : []),
     ...(tipoUsuario === "ADMIN" ? NAV_ADMIN : []),
+    ...(tipoUsuario !== "PROVEEDOR" ? NAV_ALQUILERES : []),
     ...NAV_TODOS,
   ];
+
+  const perfilActivo = location.pathname === "/perfil";
 
   return (
     <aside style={{
@@ -166,8 +173,28 @@ const HeaderComponent = () => {
         ))}
       </nav>
 
-      {/* Cerrar sesión */}
-      <div style={{ padding: "16px", borderTop: "1px solid #e8e2dc" }}>
+      {/* Perfil + Cerrar sesión */}
+      <div style={{ padding: "16px", borderTop: "1px solid #e8e2dc", display: "flex", flexDirection: "column", gap: "4px" }}>
+        <Link
+          to="/perfil"
+          style={{
+            display: "flex", alignItems: "center", gap: "12px",
+            padding: "10px 12px", borderRadius: "12px",
+            textDecoration: "none", transition: "all 0.2s",
+            fontSize: "14px", fontWeight: "600",
+            background: perfilActivo ? "#b07a5e" : "transparent",
+            color: perfilActivo ? "white" : "#3b3735",
+            boxShadow: perfilActivo ? "0 8px 20px -4px rgba(176,122,94,0.3)" : "none",
+          }}
+          onMouseEnter={(e) => { if (!perfilActivo) e.currentTarget.style.background = "#f6f2ee"; }}
+          onMouseLeave={(e) => { if (!perfilActivo) e.currentTarget.style.background = "transparent"; }}
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Perfil
+        </Link>
+
         <button
           onClick={logout}
           style={{

@@ -26,6 +26,7 @@ import Registro from './components/registro/Registro';
 import RecuperarContrasenia from "./page/RecuperarContrasenia";
 import ResetContrasenia from './page/ResetContrasenia';
 import FirmaCompletada from "./page/FirmaCompletada";
+import Perfil from "./components/Perfil"
 
 
 function App() {
@@ -82,9 +83,10 @@ function App() {
               <Route path="/crearProveedor"        element={<CrearProveedor />} />
               <Route path="/editarProveedor/:id"   element={<CrearProveedor />} />
 
+              <Route path="/Perfil"   element={<Perfil />} />
 
               {/* Default */}
-              <Route path="*" element={<Navigate to="/listAlquileres" />} />
+              <Route path="*" element={<Navigate to="/listProveedor" />} />
             </Routes>
           </div>
         </div>
