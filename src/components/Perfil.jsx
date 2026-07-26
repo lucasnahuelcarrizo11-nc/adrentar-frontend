@@ -98,6 +98,11 @@ const Perfil = () => {
   const [descripcion, setDescripcion] = useState('');
   const [zona, setZona] = useState('');
   const [activo, setActivo] = useState(true);
+  const [matriculaUrl, setMatriculaUrl] = useState(null);
+  const [archivoMatricula, setArchivoMatricula] = useState(null);
+  const [subiendoMatricula, setSubiendoMatricula] = useState(false);
+  const [mensajeMatricula, setMensajeMatricula] = useState('');
+  const [errorMatricula, setErrorMatricula] = useState('');
 
   const [errores, setErrores] = useState({});
   const [cargando, setCargando] = useState(true);
@@ -129,6 +134,7 @@ const Perfil = () => {
           setDescripcion(response.data.descripcion ?? '');
           setZona(response.data.zona ?? '');
           setActivo(response.data.activo ?? true);
+          setMatriculaUrl(response.data.matriculaUrl ?? null);
         }
       })
       .catch((error) => console.error(error))
@@ -158,6 +164,37 @@ const Perfil = () => {
     }
 
     return nuevosErrores;
+  };
+
+  const subirMatricula = async () => {
+    setErrorMatricula('');
+    setMensajeMatricula('');
+
+    if (!archivoMatricula) {
+      setErrorMatricula('Elegí un archivo PDF antes de subir');
+      return;
+    }
+    if (archivoMatricula.type !== 'application/pdf') {
+      setErrorMatricula('El archivo debe ser un PDF');
+      return;
+    }
+
+    try {
+      setSubiendoMatricula(true);
+      const response = await proveedorService.subirMatricula(usuarioId, archivoMatricula);
+      setMatriculaUrl(response.data.matriculaUrl ?? null);
+      setArchivoMatricula(null);
+      setMensajeMatricula('Matrícula subida correctamente');
+    } catch (error) {
+      if (error.response) {
+        const data = error.response.data;
+        setErrorMatricula(typeof data === 'string' ? data : data.message || 'No se pudo subir la matrícula');
+      } else {
+        setErrorMatricula('No se pudo conectar con el servidor');
+      }
+    } finally {
+      setSubiendoMatricula(false);
+    }
   };
 
   const guardarPerfil = async (e) => {
@@ -467,6 +504,66 @@ const Perfil = () => {
                   >
                     {activo ? 'Activo' : 'Inactivo'}
                   </span>
+                </div>
+
+                {/* Matrícula profesional */}
+                <div>
+                  <label style={labelStyle}>Matrícula profesional (PDF)</label>
+
+                  {matriculaUrl && (
+                    <a
+                      href={matriculaUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        fontSize: '13px', color: '#b07a5e', fontWeight: '600',
+                        textDecoration: 'none', marginBottom: '0.75rem',
+                      }}
+                    >
+                      📄 Ver matrícula actual
+                    </a>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) => setArchivoMatricula(e.target.files?.[0] ?? null)}
+                      style={{
+                        ...inputBase,
+                        flex: 1, minWidth: '220px',
+                        padding: '0.6rem 1rem',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={subirMatricula}
+                      disabled={subiendoMatricula}
+                      style={{
+                        background: subiendoMatricula ? '#d8b8a6' : '#3b3735',
+                        color: 'white',
+                        padding: '0.75rem 1.25rem', borderRadius: '1rem', border: 'none',
+                        fontSize: '11px', fontWeight: '700', textTransform: 'uppercase',
+                        letterSpacing: '0.1em', cursor: subiendoMatricula ? 'default' : 'pointer',
+                        fontFamily: 'Inter, sans-serif', transition: 'all 0.2s',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {subiendoMatricula ? 'Subiendo...' : 'Subir matrícula'}
+                    </button>
+                  </div>
+
+                  {errorMatricula && (
+                    <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px', marginLeft: '4px' }}>
+                      {errorMatricula}
+                    </p>
+                  )}
+                  {mensajeMatricula && (
+                    <p style={{ color: '#16a34a', fontSize: '12px', marginTop: '6px', marginLeft: '4px' }}>
+                      {mensajeMatricula}
+                    </p>
+                  )}
                 </div>
               </>
             )}

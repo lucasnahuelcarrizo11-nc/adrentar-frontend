@@ -4,6 +4,7 @@ import ProveedorService from "../../service/ProveedorService";
 import { useAuth } from "../../context/AuthContext";
 import { StarRatingDisplay } from "./StartRating";
 import ResenasModal from "../ResenasModal";
+import MatriculaModal from "./MatriculaModal";
 
 /* ── Icon Box ────────────────────────────────────────────── */
 const IconBox = ({ bg = "#f3ece6", color = "#b07a5e", children }) => (
@@ -53,6 +54,11 @@ const IconTrash = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
   </svg>
 );
+const IconFile = () => (
+  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
 
 /* ── Toggle Switch ───────────────────────────────────────── */
 const ToggleSwitch = ({ checked, onChange }) => (
@@ -90,7 +96,7 @@ const HoverBtn = ({ style, hoverStyle, children, ...props }) => {
 };
 
 /* ── Fila Proveedor ──────────────────────────────────────── */
-const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar, onVerResenas }) => {
+const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar, onVerResenas, onVerMatricula }) => {
   const [hovered, setHovered] = useState(false);
 
   const celdasAdmin = esAdmin ? (
@@ -204,6 +210,27 @@ const FilaProveedor = ({ p, esAdmin, onToggle, onEliminar, onVerResenas }) => {
         </div>
       </td>
 
+      {/* Matrícula */}
+      <td style={{ padding: "20px 24px" }}>
+        {p.matriculaUrl ? (
+          <button
+            onClick={() => onVerMatricula(p)}
+            title="Ver matrícula"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              fontSize: "13px", fontWeight: "600", color: "#b07a5e",
+              background: "transparent", border: "none", cursor: "pointer",
+              padding: 0, fontFamily: "Inter, sans-serif",
+            }}
+          >
+            <IconBox bg="#f3ece6" color="#b07a5e"><IconFile /></IconBox>
+            Ver matrícula
+          </button>
+        ) : (
+          <span style={{ fontSize: "13px", color: "#9c9490" }}>Sin matrícula</span>
+        )}
+      </td>
+
       {/* Puntuación */}
       <td style={{ padding: "20px 24px" }}>
         <button
@@ -230,6 +257,7 @@ const ListProveedor = () => {
   const { usuario } = useAuth();
   const [proveedores, setProveedores] = useState([]);
   const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
+  const [proveedorMatricula, setProveedorMatricula] = useState(null);
 
   const esAdmin = usuario?.tipo_usuario?.toUpperCase() === "ADMIN";
 
@@ -264,9 +292,9 @@ const ListProveedor = () => {
     }
   };
 
-  const colSpanTotal = esAdmin ? 8 : 6;
+  const colSpanTotal = esAdmin ? 9 : 7;
   const headers = [
-    "Nombre", "Especialidad", "Zona", "Teléfono", "Email", "Puntuación",
+    "Nombre", "Especialidad", "Zona", "Teléfono", "Email", "Matrícula", "Puntuación",
     ...(esAdmin ? ["Activo", "Acciones"] : []),
   ];
 
@@ -367,6 +395,7 @@ const ListProveedor = () => {
                       onToggle={toggleActivo}
                       onEliminar={eliminarProveedor}
                       onVerResenas={setProveedorSeleccionado}
+                      onVerMatricula={setProveedorMatricula}
                     />
                   ))
                 )}
@@ -401,6 +430,14 @@ const ListProveedor = () => {
           proveedor={proveedorSeleccionado}
           onClose={() => setProveedorSeleccionado(null)}
           onResenaCreada={listarProveedores}
+        />
+      ) : null}
+
+      {proveedorMatricula ? (
+        <MatriculaModal
+          url={`${import.meta.env.VITE_API_URL}${proveedorMatricula.matriculaUrl}`}
+          nombreProveedor={proveedorMatricula.nombre}
+          onClose={() => setProveedorMatricula(null)}
         />
       ) : null}
     </div>

@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import MisResenas from './components/proveedor/MisResenas';
 import HeaderComponent from './components/HeaderComponent';
 import HeaderLogout from './components/HeaderLogout';
 import AuditoriaAlquiler from "./components/alquiler/AuditoriaAlquiler";
@@ -27,6 +27,8 @@ import RecuperarContrasenia from "./page/RecuperarContrasenia";
 import ResetContrasenia from './page/ResetContrasenia';
 import FirmaCompletada from "./page/FirmaCompletada";
 import Perfil from "./components/Perfil"
+import CrearReparacion from './components/proveedor/CrearReparacion';
+import ListReparaciones from './components/proveedor/ListReparaciones';
 
 
 function App() {
@@ -82,6 +84,10 @@ function App() {
               <Route path="/listProveedor"         element={<ListProveedor />} />
               <Route path="/crearProveedor"        element={<CrearProveedor />} />
               <Route path="/editarProveedor/:id"   element={<CrearProveedor />} />
+              <Route path="/misResenas" element={<MisResenas />}/>
+
+                 <Route path="/reparaciones" element={<ListReparaciones />}/>
+               <Route path="/crearReparacion" element={<CrearReparacion />}/>
 
               <Route path="/Perfil"   element={<Perfil />} />
 

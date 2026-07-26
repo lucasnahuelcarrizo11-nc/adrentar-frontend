@@ -30,6 +30,18 @@ class ProveedorService {
     return axios.delete(`${CLIENTE_BASE_REST_API_URL}/${proveedorId}`);
   }
 
+  // 🔽 Nuevo: subir matrícula (PDF)
+  subirMatricula(proveedorId, archivo) {
+    const formData = new FormData();
+    formData.append("file", archivo);
+
+    return axios.post(
+      `${CLIENTE_BASE_REST_API_URL}/${proveedorId}/matricula`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+  }
+
 }
 
 export default new ProveedorService();
