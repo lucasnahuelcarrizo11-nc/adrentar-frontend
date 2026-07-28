@@ -4,6 +4,8 @@ import propietarioService from '../service/PropietarioService';
 import inquilinoService from '../service/InquilinoService';
 import proveedorService from '../service/ProveedorService';
 
+import MiSuscripcion from "./MiSuscripcion";
+
 // idUsuario es el id real: Inquilino y Propietario lo heredan de la clase
 // base Usuario, y Proveedor lo expone también como idProveedor (alias).
 const obtenerIdUsuario = (usuario) => {
@@ -595,6 +597,17 @@ const Perfil = () => {
               >
                 {guardando ? 'Guardando...' : 'Guardar cambios'}
               </button>
+
+              {/* ===================== SUSCRIPCIÓN ===================== */}
+              <div
+                style={{
+                  marginTop: "3rem",
+                  paddingTop: "2rem",
+                  borderTop: "1px solid #e8e2dc",
+                }}
+              >
+                <MiSuscripcion />
+              </div>
             </div>
 
           </form>
