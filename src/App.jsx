@@ -7,7 +7,7 @@ import MisResenas from './components/proveedor/MisResenas';
 import HeaderComponent from './components/HeaderComponent';
 import HeaderLogout from './components/HeaderLogout';
 import AuditoriaAlquiler from "./components/alquiler/AuditoriaAlquiler";
-
+import SuscripcionModal from './components/SuscripcionModal';
 
 import Home from './page/Home';
 import Login from './page/Login';
@@ -49,6 +49,7 @@ function App() {
         }}>
           {/* Sidebar fijo */}
           <HeaderComponent />
+<SuscripcionModal />
 
           {/* Contenido principal scrolleable */}
           <div style={{

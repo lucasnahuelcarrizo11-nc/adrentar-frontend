@@ -18,6 +18,7 @@ function CrearAlquiler() {
     precio: "",
     fechaInicio: "",
     fechaFin: "",
+    porcentajeAumento: "",
   });
 
   const [mensaje, setMensaje] = useState("");
@@ -47,6 +48,9 @@ function CrearAlquiler() {
         precio: Number(form.precio),
         fechaInicio: form.fechaInicio,
         fechaFin: form.fechaFin,
+        porcentajeAumento: form.porcentajeAumento
+          ? Number(form.porcentajeAumento)
+          : null,
       };
 
       const resultado = await AlquilerService.crearAlquiler(alquilerData);
@@ -59,6 +63,7 @@ function CrearAlquiler() {
         precio: "",
         fechaInicio: "",
         fechaFin: "",
+        porcentajeAumento: "",
       });
     } catch (error) {
       if (error.response?.data?.message) {
@@ -136,6 +141,23 @@ function CrearAlquiler() {
               value={form.precio}
               onChange={handleChange}
               required
+              disabled={loading}
+              className="w-full mt-1 p-3 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium">
+              Aumento cada 4 meses (%)
+            </label>
+            <input
+              type="number"
+              name="porcentajeAumento"
+              value={form.porcentajeAumento}
+              onChange={handleChange}
+              min="0"
+              step="0.01"
+              placeholder="Opcional. Ej: 10"
               disabled={loading}
               className="w-full mt-1 p-3 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             />

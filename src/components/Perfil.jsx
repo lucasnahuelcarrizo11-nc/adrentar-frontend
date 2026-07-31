@@ -273,9 +273,9 @@ const Perfil = () => {
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '2rem 1.5rem', background: '#f6f2ee', fontFamily: 'Inter, sans-serif' }}>
-      <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
-        {/* Card principal */}
+        {/* Card principal — datos del perfil */}
         <div style={{
           background: 'white', borderRadius: '2.5rem',
           border: '1px solid #e8e2dc', padding: '3rem',
@@ -511,9 +511,9 @@ const Perfil = () => {
                 {/* Matrícula profesional */}
                 <div>
                   <label style={labelStyle}>Matrícula profesional (PDF)</label>
-
                   {matriculaUrl && (
-                    <a
+                    <a>
+
                       href={matriculaUrl}
                       target="_blank"
                       rel="noreferrer"
@@ -522,7 +522,7 @@ const Perfil = () => {
                         fontSize: '13px', color: '#b07a5e', fontWeight: '600',
                         textDecoration: 'none', marginBottom: '0.75rem',
                       }}
-                    >
+                    
                       📄 Ver matrícula actual
                     </a>
                   )}
@@ -571,12 +571,12 @@ const Perfil = () => {
             )}
 
             {/* Botón */}
-            <div style={{ display: 'flex', gap: '1rem', paddingTop: '0.5rem', flexWrap: 'wrap' }}>
+            <div style={{ paddingTop: '0.5rem' }}>
               <button
                 type="submit"
                 disabled={guardando}
                 style={{
-                  flex: 1, minWidth: '140px',
+                  width: '100%',
                   background: guardando ? '#d8b8a6' : '#b07a5e',
                   color: 'white',
                   padding: '1rem', borderRadius: '1rem', border: 'none',
@@ -597,21 +597,20 @@ const Perfil = () => {
               >
                 {guardando ? 'Guardando...' : 'Guardar cambios'}
               </button>
-
-              {/* ===================== SUSCRIPCIÓN ===================== */}
-              <div
-                style={{
-                  marginTop: "3rem",
-                  paddingTop: "2rem",
-                  borderTop: "1px solid #e8e2dc",
-                }}
-              >
-                <MiSuscripcion />
-              </div>
             </div>
 
           </form>
         </div>
+
+        {/* Card separada — suscripción (fuera del <form> para que sus botones no disparen guardarPerfil) */}
+        <div style={{
+          background: 'white', borderRadius: '2.5rem',
+          border: '1px solid #e8e2dc', padding: '3rem',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+        }}>
+          <MiSuscripcion />
+        </div>
+
       </div>
     </div>
   );

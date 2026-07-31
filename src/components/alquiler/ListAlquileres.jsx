@@ -40,6 +40,26 @@ const formatearFechaHora = (fecha) =>
     })
     : "-";
 
+const formatearPrecio = (valor) =>
+  valor == null
+    ? "-"
+    : new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(valor);
+
+
+const calcularPrecioMes = (alq, mes) => {
+  const base = alq.precio;
+  const pct = alq.porcentajeAumento;
+  if (!pct || !alq.fechaInicio) return base;
+
+  const inicio = new Date(alq.fechaInicio);
+  const mesesTranscurridos =
+    (mes.year - inicio.getFullYear()) * 12 + (mes.month - 1 - inicio.getMonth());
+  const periodos = Math.floor(mesesTranscurridos / 4);
+
+  if (periodos <= 0) return base;
+  return base * Math.pow(1 + pct / 100, periodos);
+};
+
 /* ── Badges ──────────────────────────────────────────────── */
 const ESTADO_BADGE = {
   PENDIENTE: { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
@@ -92,6 +112,26 @@ const S = {
     background: bg, color, fontSize: "12px", fontWeight: "600",
     cursor: "pointer", fontFamily: "Inter, sans-serif", transition: "all 0.2s",
     display: "inline-flex", alignItems: "center", gap: "6px",
+  }),
+  /* Botón de acción con tamaño fijo, para que todos midan igual */
+  actionBtnFixed: (bg, hoverBg, color = "white") => ({
+    width: "110px",
+    height: "36px",
+    padding: "0 12px",
+    borderRadius: "12px",
+    border: "none",
+    background: bg,
+    color,
+    fontSize: "11px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "Inter, sans-serif",
+    transition: "all 0.2s",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    whiteSpace: "nowrap",
   }),
   label: {
     display: "block", fontSize: "10px", fontWeight: "700",
@@ -206,7 +246,7 @@ const ConfirmModal = ({ accentColor = "#b07a5e", titulo, descripcion, labelConfi
 /* ── Panel expandible wrapper ────────────────────────────── */
 const PanelExpandido = ({ accentBg, accentBorder, children }) => (
   <tr>
-    <td colSpan="5" style={{ padding: 0 }}>
+    <td colSpan="6" style={{ padding: 0 }}>
       <div style={{
         margin: "0 24px 16px",
         background: accentBg,
@@ -473,11 +513,11 @@ const ListAlquileres = () => {
             <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
               <thead>
                 <tr style={{ background: "#fcfaf9", borderBottom: "1px solid #e8e2dc" }}>
-                  {["Propiedad", "Inicio", "Fin", "Estado", "Acciones"].map((h, i) => (
+                  {["Propiedad", "Inicio", "Fin", "Precio", "Estado", "Acciones"].map((h, i) => (
                     <th key={h} style={{
                       padding: "20px 32px", fontSize: "10px", fontWeight: "700",
                       textTransform: "uppercase", letterSpacing: "0.12em", color: "#b07a5e",
-                      textAlign: i === 4 ? "right" : "left",
+                      textAlign: i === 5 ? "right" : "left",
                     }}>{h}</th>
                   ))}
                 </tr>
@@ -486,7 +526,7 @@ const ListAlquileres = () => {
               <tbody>
                 {alquileres.length === 0 && (
                   <tr>
-                    <td colSpan="5" style={{ padding: "48px", textAlign: "center" }}>
+                    <td colSpan="6" style={{ padding: "48px", textAlign: "center" }}>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
                         <div style={{ width: "64px", height: "64px", borderRadius: "20px", background: "#f6f2ee", border: "1px solid #e8e2dc", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px" }}>📋</div>
                         <p style={{ fontSize: "14px", fontWeight: "500", color: "#3b3735", margin: 0 }}>No tenés alquileres registrados</p>
@@ -498,6 +538,8 @@ const ListAlquileres = () => {
                 {alquileres.map((alq) => {
                   const filaAtenuada = alq.estado === "RECHAZADO" || alq.estado === "CANCELADO";
                   const meses = generarMesesAlquiler(alq.fechaInicio, alq.fechaFin);
+                  const tieneAumento = !!alq.porcentajeAumento;
+                  const precioMostrado = tieneAumento && alq.precioActual != null ? alq.precioActual : alq.precio;
 
                   return (
                     <React.Fragment key={alq.idAlquiler}>
@@ -527,6 +569,18 @@ const ListAlquileres = () => {
                         <td style={{ padding: "24px 32px", fontSize: "14px", fontWeight: "500", color: "#3b3735" }}>{formatearFecha(alq.fechaInicio)}</td>
                         <td style={{ padding: "24px 32px", fontSize: "14px", fontWeight: "500", color: "#3b3735" }}>{formatearFecha(alq.fechaFin)}</td>
 
+                        {/* Precio */}
+                        <td style={{ padding: "24px 32px" }}>
+                          <p style={{ fontSize: "14px", fontWeight: "700", color: "#3b3735", margin: 0 }}>
+                            {formatearPrecio(precioMostrado)}
+                          </p>
+                          {tieneAumento && (
+                            <p style={{ fontSize: "11px", color: "#b07a5e", margin: "2px 0 0" }}>
+                              Base {formatearPrecio(alq.precio)} · +{alq.porcentajeAumento}% / 4 meses
+                            </p>
+                          )}
+                        </td>
+
                         {/* Estado */}
                         <td style={{ padding: "24px 32px" }}><EstadoBadge estado={alq.estado} /></td>
 
@@ -539,7 +593,7 @@ const ListAlquileres = () => {
                               <>
                                 <HoverBtn
                                   onClick={() => setModalFirmaInquilino(alq)}
-                                  style={{ ...S.actionBtn("#16a34a", "#15803d"), fontSize: "11px" }}
+                                  style={S.actionBtnFixed("#16a34a", "#15803d")}
                                   hoverStyle={{ opacity: 0.88 }}
                                   title="Aceptar"
                                 >
@@ -547,7 +601,7 @@ const ListAlquileres = () => {
                                 </HoverBtn>
                                 <HoverBtn
                                   onClick={() => setModalRechazo(alq.idAlquiler)}
-                                  style={{ ...S.actionBtn("#dc2626", "#b91c1c"), fontSize: "11px" }}
+                                  style={S.actionBtnFixed("#dc2626", "#b91c1c")}
                                   hoverStyle={{ opacity: 0.88 }}
                                   title="Rechazar"
                                 >
@@ -561,7 +615,7 @@ const ListAlquileres = () => {
                               <>
                                 <HoverBtn
                                   onClick={() => irAAuditoria(alq)}
-                                  style={{ ...S.actionBtn("#f6f2ee", "#3b3735", "#3b3735"), fontSize: "11px", border: "1px solid #e8e2dc" }}
+                                  style={{ ...S.actionBtnFixed("#f6f2ee", "#3b3735", "#3b3735"), border: "1px solid #e8e2dc" }}
                                   hoverStyle={{ background: "#3b3735", color: "white", border: "1px solid #3b3735" }}
                                   title="Auditoría"
                                 >
@@ -571,7 +625,7 @@ const ListAlquileres = () => {
                                 {rol === "PROPIETARIO" && !alq.envelopeId && (
                                   <HoverBtn
                                     onClick={() => setModalContratoPosteriori(alq)}
-                                    style={{ ...S.actionBtn("#4f46e5", "#4338ca"), fontSize: "11px" }}
+                                    style={S.actionBtnFixed("#4f46e5", "#4338ca")}
                                     hoverStyle={{ opacity: 0.88 }}
                                     title="Generar contrato"
                                   >
@@ -580,13 +634,17 @@ const ListAlquileres = () => {
                                 )}
 
                                 {rol === "PROPIETARIO" && alq.envelopeId && (
-                                  <span style={{ fontSize: "11px", color: "#15803d", fontWeight: "600", padding: "8px 4px" }}>
-                                    ✔ Contrato enviado
+                                  <span style={{
+                                    width: "110px", height: "36px",
+                                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: "11px", color: "#15803d", fontWeight: "600", textAlign: "center",
+                                  }}>
+                                    ✔ Enviado
                                   </span>
                                 )}
                                 <HoverBtn
                                   onClick={() => togglePagos(alq.idAlquiler)}
-                                  style={{ ...S.actionBtn(alquilerExpandidoPagos === alq.idAlquiler ? "#3b3735" : "#f6f2ee", "#3b3735", alquilerExpandidoPagos === alq.idAlquiler ? "white" : "#3b3735"), fontSize: "11px", border: "1px solid #e8e2dc" }}
+                                  style={{ ...S.actionBtnFixed(alquilerExpandidoPagos === alq.idAlquiler ? "#3b3735" : "#f6f2ee", "#3b3735", alquilerExpandidoPagos === alq.idAlquiler ? "white" : "#3b3735"), border: "1px solid #e8e2dc" }}
                                   hoverStyle={{ background: "#3b3735", color: "white", border: "1px solid #3b3735" }}
                                   title="Pagos"
                                 >
@@ -594,7 +652,7 @@ const ListAlquileres = () => {
                                 </HoverBtn>
                                 <HoverBtn
                                   onClick={() => toggleDocs(alq.idAlquiler)}
-                                  style={{ ...S.actionBtn(alquilerExpandidoDocs === alq.idAlquiler ? "#3b3735" : "#f6f2ee", "#3b3735", alquilerExpandidoDocs === alq.idAlquiler ? "white" : "#3b3735"), fontSize: "11px", border: "1px solid #e8e2dc" }}
+                                  style={{ ...S.actionBtnFixed(alquilerExpandidoDocs === alq.idAlquiler ? "#3b3735" : "#f6f2ee", "#3b3735", alquilerExpandidoDocs === alq.idAlquiler ? "white" : "#3b3735"), border: "1px solid #e8e2dc" }}
                                   hoverStyle={{ background: "#3b3735", color: "white", border: "1px solid #3b3735" }}
                                   title="Documentos"
                                 >
@@ -602,7 +660,7 @@ const ListAlquileres = () => {
                                 </HoverBtn>
                                 <HoverBtn
                                   onClick={() => toggleReportes(alq.idAlquiler)}
-                                  style={{ ...S.actionBtn(alquilerExpandidoReportes === alq.idAlquiler ? "#b07a5e" : "#f6f2ee", "#b07a5e", alquilerExpandidoReportes === alq.idAlquiler ? "white" : "#b07a5e"), fontSize: "11px", border: "1px solid #e8e2dc" }}
+                                  style={{ ...S.actionBtnFixed(alquilerExpandidoReportes === alq.idAlquiler ? "#b07a5e" : "#f6f2ee", "#b07a5e", alquilerExpandidoReportes === alq.idAlquiler ? "white" : "#b07a5e"), border: "1px solid #e8e2dc" }}
                                   hoverStyle={{ background: "#b07a5e", color: "white", border: "1px solid #b07a5e" }}
                                   title="Reportes"
                                 >
@@ -610,7 +668,7 @@ const ListAlquileres = () => {
                                 </HoverBtn>
                                 <HoverBtn
                                   onClick={() => setModalCancelacion(alq.idAlquiler)}
-                                  style={{ padding: "8px 10px", borderRadius: "12px", border: "none", background: "transparent", color: "#f87171", cursor: "pointer", transition: "all 0.2s", display: "inline-flex" }}
+                                  style={{ ...S.actionBtnFixed("transparent", "#fef2f2", "#f87171"), width: "36px" }}
                                   hoverStyle={{ background: "#fef2f2" }}
                                   title="Cancelar alquiler"
                                 >
@@ -628,29 +686,37 @@ const ListAlquileres = () => {
                           <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.1em", color: "#15803d", marginBottom: "16px" }}>
                             📅 Meses del alquiler
                           </p>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px" }}>
                             {meses.map((mes, i) => {
                               const pagosAlquiler = pagos[alq.idAlquiler] || [];
                               const pago = pagosAlquiler.find((p) => p.mes === mes.month && p.anio === mes.year);
                               const estado = pago?.estado;
+                              const monto = pago?.monto ?? calcularPrecioMes(alq, mes);
+
                               return (
-                                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "white", border: "1px solid #e8e2dc", borderRadius: "14px", padding: "12px 16px" }}>
-                                  <span style={{ fontSize: "13px", color: "#3b3735", textTransform: "capitalize", fontWeight: "500" }}>{mes.label}</span>
-                                  {estado === "APROBADO" ? (
-                                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#15803d" }}>✔ Pagado</span>
-                                  ) : estado === "PENDIENTE" ? (
-                                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#b45309" }}>⏳ Pendiente</span>
-                                  ) : estado === "RECHAZADO" ? (
-                                    <HoverBtn onClick={() => pagarMes(alq.idAlquiler, mes)} style={S.actionBtn("#dc2626", "#b91c1c")} hoverStyle={{ opacity: 0.88 }}>Reintentar</HoverBtn>
-                                  ) : (
-                                    <HoverBtn onClick={() => pagarMes(alq.idAlquiler, mes)} style={S.actionBtn("#b07a5e", "#9c6a50")} hoverStyle={{ opacity: 0.88 }}>Pagar</HoverBtn>
-                                  )}
+                                <div key={i} style={{ display: "flex", flexDirection: "column", gap: "6px", background: "white", border: "1px solid #e8e2dc", borderRadius: "14px", padding: "12px 16px" }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <span style={{ fontSize: "13px", color: "#3b3735", textTransform: "capitalize", fontWeight: "500" }}>{mes.label}</span>
+                                    {estado === "APROBADO" ? (
+                                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#15803d" }}>✔ Pagado</span>
+                                    ) : estado === "PENDIENTE" ? (
+                                      <span style={{ fontSize: "11px", fontWeight: "700", color: "#b45309" }}>⏳ Pendiente</span>
+                                    ) : estado === "RECHAZADO" ? (
+                                      <HoverBtn onClick={() => pagarMes(alq.idAlquiler, mes)} style={S.actionBtn("#dc2626", "#b91c1c")} hoverStyle={{ opacity: 0.88 }}>Reintentar</HoverBtn>
+                                    ) : (
+                                      <HoverBtn onClick={() => pagarMes(alq.idAlquiler, mes)} style={S.actionBtn("#b07a5e", "#9c6a50")} hoverStyle={{ opacity: 0.88 }}>Pagar</HoverBtn>
+                                    )}
+                                  </div>
+                                  <span style={{ fontSize: "12px", color: "#6c625c" }}>
+                                    {estado ? "Importe" : "Importe estimado"}: <strong style={{ color: "#3b3735" }}>{formatearPrecio(monto)}</strong>
+                                  </span>
                                 </div>
                               );
                             })}
                           </div>
                         </PanelExpandido>
                       )}
+
 
                       {/* ── Panel REPORTES ── */}
                       {alquilerExpandidoReportes === alq.idAlquiler && (
