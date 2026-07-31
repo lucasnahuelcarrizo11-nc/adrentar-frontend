@@ -9,7 +9,7 @@ const FEATURES = [
     bg: "#f6f2ee",
     icon: (
       <svg width="20" height="20" fill="none" stroke="#b07a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
   },
@@ -19,7 +19,7 @@ const FEATURES = [
     bg: "#f3ece6",
     icon: (
       <svg width="20" height="20" fill="none" stroke="#b07a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+        <path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     ),
   },
@@ -29,14 +29,19 @@ const FEATURES = [
     bg: "#f6f2ee",
     icon: (
       <svg width="20" height="20" fill="none" stroke="#b07a5e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-        <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
       </svg>
     ),
   },
 ];
 
 const PROPS_LIST = ["Dashboard de ingresos", "Validación de inquilinos", "Gestión multi-propiedad"];
-const INQ_LIST   = ["Pagos en un clic", "Historial de recibos", "Chat directo soporte"];
+const INQ_LIST = ["Pagos en un clic", "Historial de recibos", "Chat directo soporte"];
+const PROV_LIST = [
+  "Recibí solicitudes de trabajo",
+  "Subí fotos de las reparaciones",
+  "Seguimiento de trabajos realizados"
+];
 
 /* ── Hover Button ────────────────────────────────────────── */
 const HoverBtn = ({ style, hoverStyle, children, ...props }) => {
@@ -56,9 +61,9 @@ const HoverBtn = ({ style, hoverStyle, children, ...props }) => {
 /* ── Logo SVG ────────────────────────────────────────────── */
 const Logo = ({ size = 32 }) => (
   <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
-    <rect width="40" height="40" rx="12" fill="#b07a5e"/>
-    <path d="M20 10L10 18V30H15V22H25V30H30V18L20 10Z" fill="white"/>
-    <path d="M20 15L23 20H17L20 15Z" fill="#b07a5e"/>
+    <rect width="40" height="40" rx="12" fill="#b07a5e" />
+    <path d="M20 10L10 18V30H15V22H25V30H30V18L20 10Z" fill="white" />
+    <path d="M20 15L23 20H17L20 15Z" fill="#b07a5e" />
   </svg>
 );
 
@@ -250,7 +255,7 @@ const Home = () => {
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   <svg width="24" height="24" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                   </svg>
                 </div>
                 <div>
@@ -326,7 +331,13 @@ const Home = () => {
       {/* ── ROLES ───────────────────────────────────────────── */}
       <section id="roles" style={{ padding: "80px 24px", background: "#f6f2ee" }}>
         <div style={{ maxWidth: "860px", margin: "0 auto" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "32px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "32px",
+            }}
+          >
 
             {/* Propietario */}
             <div style={{
@@ -361,7 +372,7 @@ const Home = () => {
                 }}
                 hoverStyle={{ background: "#b07a5e", color: "white" }}
               >
-                Saber más
+                Registrarme como Propietario
               </HoverBtn>
             </div>
 
@@ -405,8 +416,116 @@ const Home = () => {
               </Link>
             </div>
 
+
+            {/* Proveedor */}
+<div
+  style={{
+    background: "white",
+    padding: "40px",
+    borderRadius: "2.5rem",
+    border: "1px solid #e8e2dc",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+  }}
+>
+  <p
+    style={{
+      fontSize: "10px",
+      fontWeight: "700",
+      letterSpacing: "0.15em",
+      textTransform: "uppercase",
+      color: "#b07a5e",
+      marginBottom: "24px",
+    }}
+  >
+    Panel Proveedor
+  </p>
+
+  <h3
+    style={{
+      fontSize: "24px",
+      fontWeight: "300",
+      color: "#3b3735",
+      marginBottom: "24px",
+      lineHeight: 1.3,
+    }}
+  >
+    Gestioná tus{" "}
+    <br />
+    <span
+      style={{
+        fontWeight: "500",
+        color: "#b07a5e",
+      }}
+    >
+      trabajos fácilmente.
+    </span>
+  </h3>
+
+  <ul
+    style={{
+      listStyle: "none",
+      padding: 0,
+      margin: "0 0 32px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+    }}
+  >
+    {PROV_LIST.map((item) => (
+      <li
+        key={item}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontSize: "13px",
+          color: "#6c625c",
+        }}
+      >
+        <div
+          style={{
+            width: "6px",
+            height: "6px",
+            borderRadius: "50%",
+            background: "#b07a5e",
+            flexShrink: 0,
+          }}
+        />
+        {item}
+      </li>
+    ))}
+  </ul>
+
+  <Link
+    to="/registro"
+    style={{
+      display: "block",
+      textAlign: "center",
+      padding: "16px",
+      borderRadius: "16px",
+      background: "#b07a5e",
+      color: "white",
+      fontSize: "14px",
+      fontWeight: "500",
+      textDecoration: "none",
+      transition: "all 0.2s",
+    }}
+    onMouseEnter={(e) =>
+      (e.currentTarget.style.background = "#9c6a50")
+    }
+    onMouseLeave={(e) =>
+      (e.currentTarget.style.background = "#b07a5e")
+    }
+  >
+    Registrarme como proveedor
+  </Link>
+</div>
+
           </div>
         </div>
+
+
+        
       </section>
 
       {/* ── CTA FINAL ───────────────────────────────────────── */}

@@ -6,6 +6,16 @@ const CLIENTE_BASE_REST_API_URL = `/api/propiedad`;
 
 class PropiedadService {
 
+  listarTodas() {
+    const token = localStorage.getItem("token");
+
+    return axios.get(`${CLIENTE_BASE_REST_API_URL}/listarTodas`, {
+        headers: {
+            Authorization: token,
+        },
+    });
+}
+
   // 🔹 Listar solo las propiedades del propietario logueado
   listarMisPropiedades() {
     const token = localStorage.getItem("token");
@@ -52,5 +62,7 @@ class PropiedadService {
     });
   }
 }
+
+
 
 export default new PropiedadService();

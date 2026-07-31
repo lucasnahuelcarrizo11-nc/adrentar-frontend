@@ -9,11 +9,46 @@ const NAV_PROPIETARIO = [
     label: "Propiedades",
     icon: (
       <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+        />
+      </svg>
+    ),
+  },
+
+  {
+    to: "/gastosReparaciones",
+    label: "Gastos",
+    icon: (
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+          d="M12 8c-2.21 0-4 1.343-4 3s1.79 3 4 3 4 1.343 4 3-1.79 3-4 3m0-12V5m0 14v-2"
+        />
+      </svg>
+    ),
+  },
+   {
+    to: "/estadisticasAvanzadas",
+    label: "Ganancia",
+    icon: (
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+          d="M12 8c-2.21 0-4 1.343-4 3s1.79 3 4 3 4 1.343 4 3-1.79 3-4 3m0-12V5m0 14v-2"
+        />
       </svg>
     ),
   },
 ];
+
 
 const NAV_ADMIN = [
   {
@@ -122,7 +157,9 @@ const HeaderComponent = () => {
     ? "Administrador"
     : tipoUsuario === "PROPIETARIO"
     ? "Propietario"
-    : "Inquilino";
+    : "Inquilino"
+    
+    ;
 
   const navItems = [
     ...(tipoUsuario === "PROPIETARIO" ? NAV_PROPIETARIO : []),
@@ -181,13 +218,7 @@ const HeaderComponent = () => {
         </div>
       </div>
 
-      {/* Campanita notificaciones — solo inquilino */}
-      {usuario && tipoUsuario === "INQUILINO" && (
-        <div style={{ padding: "16px 24px 0" }}>
-          <NotificacionesBell idInquilino={usuario.idUsuario} />
-        </div>
-      )}
-
+     
       {/* Nav */}
       <nav style={{ flex: 1, padding: "16px", display: "flex", flexDirection: "column", gap: "4px", overflowY: "auto" }}>
         {navItems.map((item) => (

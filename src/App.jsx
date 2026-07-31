@@ -29,6 +29,8 @@ import FirmaCompletada from "./page/FirmaCompletada";
 import Perfil from "./components/Perfil"
 import CrearReparacion from './components/proveedor/CrearReparacion';
 import ListReparaciones from './components/proveedor/ListReparaciones';
+import GastosReparaciones from './components/GastosReparaciones';
+import EstadisticasAvanzadas from './components/EstadisticasAvanzadas';
 
 
 function App() {
@@ -63,6 +65,8 @@ function App() {
               <Route path="/listPropietarios"    element={<ListPropietario />} />
               <Route path="/crearPropietario"    element={<CrearPropietario />} />
               <Route path="/editPropietario/:id" element={<CrearPropietario />} />
+              <Route path="/gastosReparaciones" element={<GastosReparaciones/>}/>
+              <Route path='/estadisticasAvanzadas' element={<EstadisticasAvanzadas/>}/>
 
               {/* PROPIEDADES */}
               <Route path="/listPropiedades"    element={<ListPropiedades />} />

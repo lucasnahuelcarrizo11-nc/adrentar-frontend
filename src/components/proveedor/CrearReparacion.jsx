@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import ReparacionService from '../../service/ReparacionService';
+import PropiedadService from '../../service/PropiedadService';
 import { getUsuarioActual } from '../../service/AuthService';
 
 const obtenerIdProveedor = (usuario) => {
@@ -54,12 +55,22 @@ const CrearReparacion = () => {
   const usuario = getUsuarioActual();
   const idProveedor = obtenerIdProveedor(usuario);
 
+  const [propiedades, setPropiedades] = useState([]);
+  const [idPropiedad, setIdPropiedad] = useState('');
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [monto, setMonto] = useState('');
   const [imagenes, setImagenes] = useState([]);
   const [errores, setErrores] = useState({});
   const [errorBackend, setErrorBackend] = useState('');
   const [guardando, setGuardando] = useState(false);
+
+  useEffect(() => {
+    // Ajustar al método real del service de propiedades
+    PropiedadService.listarTodas()
+      .then((res) => setPropiedades(res.data))
+      .catch((err) => console.error('No se pudieron cargar las propiedades', err));
+  }, []);
 
   const manejarSeleccionImagenes = (e) => {
     const archivos = Array.from(e.target.files ?? []);
@@ -69,6 +80,8 @@ const CrearReparacion = () => {
   const validarFormulario = () => {
     const e = {};
     if (!descripcion.trim()) e.descripcion = 'La descripción es obligatoria';
+    if (!idPropiedad) e.idPropiedad = 'Seleccioná una propiedad';
+    if (monto && isNaN(Number(monto))) e.monto = 'El monto debe ser un número';
     return e;
   };
 
@@ -92,8 +105,10 @@ const CrearReparacion = () => {
       setGuardando(true);
       await ReparacionService.crearReparacion({
         idProveedor,
+        idPropiedad,
         titulo: titulo.trim(),
         descripcion: descripcion.trim(),
+        monto: monto ? Number(monto) : null,
         imagenes,
       });
       navigate('/reparaciones');
@@ -156,6 +171,33 @@ const CrearReparacion = () => {
 
           <form onSubmit={guardarReparacion} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
+            {/* Propiedad */}
+            <div>
+              <label style={labelStyle}>Propiedad</label>
+              <select
+                value={idPropiedad}
+                onChange={(e) => setIdPropiedad(e.target.value)}
+                style={{
+                  ...inputBase,
+                  borderColor: errores.idPropiedad ? '#ef4444' : '#eee4e4',
+                }}
+                onFocus={errores.idPropiedad ? handleFocusError : handleFocus}
+                onBlur={handleBlur}
+              >
+                <option value="">Seleccioná una propiedad</option>
+                {propiedades.map((p) => (
+                  <option key={p.idPropiedad} value={p.idPropiedad}>
+                    {p.TituloPropiedad ?? p.tituloPropiedad}
+                  </option>
+                ))}
+              </select>
+              {errores.idPropiedad && (
+                <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px', marginLeft: '4px' }}>
+                  {errores.idPropiedad}
+                </p>
+              )}
+            </div>
+
             {/* Título (opcional) */}
             <div>
               <label style={labelStyle}>Título (opcional)</label>
@@ -189,6 +231,30 @@ const CrearReparacion = () => {
               {errores.descripcion && (
                 <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px', marginLeft: '4px' }}>
                   {errores.descripcion}
+                </p>
+              )}
+            </div>
+
+            {/* Monto */}
+            <div>
+              <label style={labelStyle}>Monto (opcional)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={monto}
+                onChange={(e) => setMonto(e.target.value)}
+                placeholder="Ej: 45000"
+                style={{
+                  ...inputBase,
+                  borderColor: errores.monto ? '#ef4444' : '#eee4e4',
+                }}
+                onFocus={errores.monto ? handleFocusError : handleFocus}
+                onBlur={handleBlur}
+              />
+              {errores.monto && (
+                <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px', marginLeft: '4px' }}>
+                  {errores.monto}
                 </p>
               )}
             </div>
