@@ -31,6 +31,7 @@ import CrearReparacion from './components/proveedor/CrearReparacion';
 import ListReparaciones from './components/proveedor/ListReparaciones';
 import GastosReparaciones from './components/GastosReparaciones';
 import EstadisticasAvanzadas from './components/EstadisticasAvanzadas';
+import MiAlquiler from './components/inquilinos/MiAlquiler';
 
 
 function App() {
@@ -72,6 +73,7 @@ function App() {
               <Route path="/listPropiedades"    element={<ListPropiedades />} />
               <Route path="/CrearPropiedad"     element={<CrearPropiedad />} />
               <Route path="/editPropiedad/:id"  element={<CrearPropiedad />} />
+              <Route path="/miAlquiler" element={<MiAlquiler/>}/>
 
               {/* INQUILINOS */}
               <Route path="/listInquilino"    element={<ListInquilino />} />

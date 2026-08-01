@@ -116,6 +116,22 @@ const NAV_TODOS = [
   },
 ];
 
+const NAV_INQUILINO = [
+  {
+    to: "/miAlquiler",
+    label: "Mi Alquiler",
+    icon: (
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    ),
+  },
+];
 /* ── NavLink con estado activo ───────────────────────────── */
 const NavItem = ({ to, label, icon }) => {
   const location = useLocation();
@@ -161,13 +177,14 @@ const HeaderComponent = () => {
     
     ;
 
-  const navItems = [
-    ...(tipoUsuario === "PROPIETARIO" ? NAV_PROPIETARIO : []),
-    ...(tipoUsuario === "PROVEEDOR" ? NAV_PROVEEDOR : []),
-    ...(tipoUsuario === "ADMIN" ? NAV_ADMIN : []),
-    ...(tipoUsuario !== "PROVEEDOR" ? NAV_ALQUILERES : []),
-    ...NAV_TODOS,
-  ];
+const navItems = [
+  ...(tipoUsuario === "PROPIETARIO" ? NAV_PROPIETARIO : []),
+  ...(tipoUsuario === "PROVEEDOR" ? NAV_PROVEEDOR : []),
+  ...(tipoUsuario === "ADMIN" ? NAV_ADMIN : []),
+  ...(tipoUsuario === "INQUILINO" ? NAV_INQUILINO : []),
+  ...(tipoUsuario !== "PROVEEDOR" ? NAV_ALQUILERES : []),
+  ...NAV_TODOS,
+];
 
   const perfilActivo = location.pathname === "/perfil";
 
