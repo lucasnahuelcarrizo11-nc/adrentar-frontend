@@ -29,9 +29,16 @@ const generarMesesAlquiler = (fechaInicio, fechaFin) => {
   }
   return meses;
 };
-
-const formatearFecha = (fecha) =>
-  fecha ? new Date(fecha).toLocaleDateString("es-AR") : "-";
+const formatearFecha = (fecha) => {
+  if (!fecha) return "-";
+  const soloFecha = typeof fecha === "string" ? fecha.slice(0, 10) : null;
+  if (soloFecha && /^\d{4}-\d{2}-\d{2}$/.test(soloFecha)) {
+    const [anio, mes, dia] = soloFecha.split("-");
+    return `${dia}/${mes}/${anio}`;
+  }
+  // Fallback para otros formatos de fecha
+  return new Date(fecha).toLocaleDateString("es-AR");
+};
 
 const formatearFechaHora = (fecha) =>
   fecha
