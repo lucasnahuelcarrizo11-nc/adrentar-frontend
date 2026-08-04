@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import ReparacionService from '../../service/ReparacionService';
 import PropiedadService from '../../service/PropiedadService';
@@ -48,15 +48,21 @@ const handleFocusError = (e) => {
   e.target.style.borderColor = '#ef4444';
   e.target.style.boxShadow = '0 0 0 4px rgba(239,68,68,0.05)';
 };
+
+const MAX_SUGERENCIAS = 5;
 // ────────────────────────────────────────────────────────────────────────────
 
 const CrearReparacion = () => {
   const navigate = useNavigate();
   const usuario = getUsuarioActual();
   const idProveedor = obtenerIdProveedor(usuario);
+  const contenedorBusquedaRef = useRef(null);
 
   const [propiedades, setPropiedades] = useState([]);
   const [idPropiedad, setIdPropiedad] = useState('');
+  const [busquedaPropiedad, setBusquedaPropiedad] = useState('');
+  const [sugerenciasAbiertas, setSugerenciasAbiertas] = useState(false);
+
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [monto, setMonto] = useState('');
@@ -66,11 +72,49 @@ const CrearReparacion = () => {
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    // Ajustar al método real del service de propiedades
     PropiedadService.listarTodas()
       .then((res) => setPropiedades(res.data))
       .catch((err) => console.error('No se pudieron cargar las propiedades', err));
   }, []);
+
+  // Cierra las sugerencias si se hace clic fuera del buscador
+  useEffect(() => {
+    const manejarClickFuera = (e) => {
+      if (contenedorBusquedaRef.current && !contenedorBusquedaRef.current.contains(e.target)) {
+        setSugerenciasAbiertas(false);
+      }
+    };
+    document.addEventListener('mousedown', manejarClickFuera);
+    return () => document.removeEventListener('mousedown', manejarClickFuera);
+  }, []);
+
+  const coincidencias = busquedaPropiedad.trim().length >= 2
+    ? propiedades.filter((p) =>
+        (p.direccion ?? '').toLowerCase().includes(busquedaPropiedad.trim().toLowerCase())
+      )
+    : [];
+
+  const propiedadesFiltradas = coincidencias.slice(0, MAX_SUGERENCIAS);
+  const hayMasResultados = coincidencias.length > MAX_SUGERENCIAS;
+
+  const seleccionarPropiedad = (p) => {
+    setIdPropiedad(p.idPropiedad);
+    setBusquedaPropiedad(p.direccion);
+    setSugerenciasAbiertas(false);
+    setErrores((prev) => ({ ...prev, idPropiedad: undefined }));
+  };
+
+  const manejarCambioBusqueda = (e) => {
+    setBusquedaPropiedad(e.target.value);
+    setSugerenciasAbiertas(true);
+    // Si el texto ya no coincide con la propiedad seleccionada, se deselecciona
+    if (idPropiedad) {
+      const seleccionada = propiedades.find((p) => p.idPropiedad === idPropiedad);
+      if (seleccionada && seleccionada.direccion !== e.target.value) {
+        setIdPropiedad('');
+      }
+    }
+  };
 
   const manejarSeleccionImagenes = (e) => {
     const archivos = Array.from(e.target.files ?? []);
@@ -80,7 +124,7 @@ const CrearReparacion = () => {
   const validarFormulario = () => {
     const e = {};
     if (!descripcion.trim()) e.descripcion = 'La descripción es obligatoria';
-    if (!idPropiedad) e.idPropiedad = 'Seleccioná una propiedad';
+    if (!idPropiedad) e.idPropiedad = 'Seleccioná una propiedad de la lista';
     if (monto && isNaN(Number(monto))) e.monto = 'El monto debe ser un número';
     return e;
   };
@@ -171,26 +215,65 @@ const CrearReparacion = () => {
 
           <form onSubmit={guardarReparacion} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
-            {/* Propiedad */}
-            <div>
+            {/* Propiedad — buscador con autocompletado */}
+            <div ref={contenedorBusquedaRef} style={{ position: 'relative' }}>
               <label style={labelStyle}>Propiedad</label>
-              <select
-                value={idPropiedad}
-                onChange={(e) => setIdPropiedad(e.target.value)}
+              <input
+                type="text"
+                value={busquedaPropiedad}
+                onChange={manejarCambioBusqueda}
+                onFocus={(e) => { (errores.idPropiedad ? handleFocusError : handleFocus)(e); }}
+                onBlur={handleBlur}
+                placeholder="Escribí una dirección, ej: 3097, Avenida Corrientes"
+                autoComplete="off"
                 style={{
                   ...inputBase,
                   borderColor: errores.idPropiedad ? '#ef4444' : '#eee4e4',
                 }}
-                onFocus={errores.idPropiedad ? handleFocusError : handleFocus}
-                onBlur={handleBlur}
-              >
-                <option value="">Seleccioná una propiedad</option>
-                {propiedades.map((p) => (
-                  <option key={p.idPropiedad} value={p.idPropiedad}>
-                    {p.TituloPropiedad ?? p.tituloPropiedad}
-                  </option>
-                ))}
-              </select>
+              />
+
+              {sugerenciasAbiertas && propiedadesFiltradas.length > 0 && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+                  background: 'white', border: '1px solid #eee4e4', borderRadius: '1rem',
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.08)', maxHeight: '260px',
+                  overflowY: 'auto', zIndex: 20,
+                }}>
+                  {propiedadesFiltradas.map((p) => (
+                    <div
+                      key={p.idPropiedad}
+                      onClick={() => seleccionarPropiedad(p)}
+                      style={{
+                        padding: '12px 16px', fontSize: '13px', color: '#3b3735',
+                        cursor: 'pointer', borderBottom: '1px solid #f6f2ee',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = '#fcfaf9')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'white')}
+                    >
+                      {p.direccion}
+                    </div>
+                  ))}
+                  {hayMasResultados && (
+                    <div style={{
+                      padding: '10px 16px', fontSize: '11px', color: '#9c9490',
+                      fontStyle: 'italic', textAlign: 'center',
+                    }}>
+                      Seguí escribiendo para afinar la búsqueda...
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {sugerenciasAbiertas && busquedaPropiedad.trim().length >= 2 && propiedadesFiltradas.length === 0 && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+                  background: 'white', border: '1px solid #eee4e4', borderRadius: '1rem',
+                  padding: '12px 16px', fontSize: '13px', color: '#9c9490', zIndex: 20,
+                }}>
+                  No se encontraron propiedades
+                </div>
+              )}
+
               {errores.idPropiedad && (
                 <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '6px', marginLeft: '4px' }}>
                   {errores.idPropiedad}

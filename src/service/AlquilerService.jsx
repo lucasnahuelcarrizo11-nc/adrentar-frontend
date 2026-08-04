@@ -38,6 +38,13 @@ class AlquilerService {
       headers: { Authorization: token }
     });
   }
+
+  editarAlquiler(id, data) {
+    const token = localStorage.getItem("token");
+    return axios.put(`${CLIENTE_BASE_REST_API_URL}/${id}/editar`, data, {
+      headers: { Authorization: token }
+    });
+  }
 }
 
 export default new AlquilerService();

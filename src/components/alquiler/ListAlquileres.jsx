@@ -8,6 +8,7 @@ import PagoService from "../../service/PagoService";
 import ReporteService from "../../service/ReporteService";
 import ModalFirmaInquilino from "./ModalFirmaInquilino";
 import ModalContrato from "./ModalContrato";
+import ModalEditarAlquiler from "./ModalEditarAlquiler";
 
 
 /* ── Utils ───────────────────────────────────────────────── */
@@ -185,6 +186,13 @@ const IconFlag = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 21V4m0 0l9-1 9 1v11l-9-1-9 1V4z" />
   </svg>
 );
+
+const IconEdit = () => (
+  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+  </svg>
+);
+
 const IconWarn = () => (
   <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -268,6 +276,7 @@ const ListAlquileres = () => {
   const navigate = useNavigate();
 
   const [modalContratoPosteriori, setModalContratoPosteriori] = useState(null);
+    const [modalEdicion, setModalEdicion] = useState(null);
 
   const [alquileres, setAlquileres] = useState([]);
   const [docs, setDocs] = useState([]);
@@ -587,8 +596,7 @@ const ListAlquileres = () => {
                         {/* Acciones */}
                         <td style={{ padding: "24px 32px" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px", flexWrap: "wrap" }}>
-
-                            {/* Pendiente → inquilino acepta/rechaza */}
+      {/* Pendiente → inquilino acepta/rechaza */}
                             {alq.estado === "PENDIENTE" && rol === "INQUILINO" && (
                               <>
                                 <HoverBtn
@@ -608,6 +616,18 @@ const ListAlquileres = () => {
                                   <IconX /> Rechazar
                                 </HoverBtn>
                               </>
+                            )}
+
+                            {/* Pendiente → propietario puede editar */}
+                            {alq.estado === "PENDIENTE" && rol === "PROPIETARIO" && (
+                              <HoverBtn
+                                onClick={() => setModalEdicion(alq)}
+                                style={{ ...S.actionBtnFixed("#f6f2ee", "#3b3735", "#3b3735"), border: "1px solid #e8e2dc" }}
+                                hoverStyle={{ background: "#3b3735", color: "white", border: "1px solid #3b3735" }}
+                                title="Editar"
+                              >
+                                <IconEdit /> Editar
+                              </HoverBtn>
                             )}
 
                             {/* Aceptado → pagos / docs / reportes / auditoría / cancelar */}
@@ -862,6 +882,17 @@ const ListAlquileres = () => {
             setModalContratoPosteriori(null);
             cargarAlquileres(); // recargar para mostrar ✔ Contrato enviado
           }}
+        />
+      )}
+
+         {modalEdicion && (
+        <ModalEditarAlquiler
+          alquiler={modalEdicion}
+          onGuardado={() => {
+            setModalEdicion(null);
+            cargarAlquileres();
+          }}
+          onCerrar={() => setModalEdicion(null)}
         />
       )}
 
