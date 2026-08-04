@@ -27,8 +27,18 @@ const handleBlur = (e) => {
 
 const aFechaInput = (fecha) => {
   if (!fecha) return '';
+  // Tomamos directamente los primeros 10 caracteres del string ISO ("YYYY-MM-DD"),
+  // sin pasar por new Date()/toISOString(), para no correr el día según el
+  // huso horario del navegador.
+  if (typeof fecha === 'string') {
+    return fecha.slice(0, 10);
+  }
+  // Fallback por si llega como objeto Date u otro tipo
   const d = new Date(fecha);
-  return d.toISOString().split('T')[0];
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 };
 
 const ModalEditarAlquiler = ({ alquiler, onGuardado, onCerrar }) => {
