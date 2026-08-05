@@ -143,7 +143,7 @@ const ListPropiedades = () => {
                             </div>
                             <div>
                               <p style={{ fontSize: '14px', fontWeight: '700', color: '#3b3735', margin: 0 }}>
-                                {propiedad.titulo|| propiedad.direccion}
+                                {propiedad.tituloPropiedad}
                               </p>
                               <p style={{ fontSize: '12px', color: '#6c625c', margin: '2px 0 0' }}>
                                 {propiedad.direccion}
