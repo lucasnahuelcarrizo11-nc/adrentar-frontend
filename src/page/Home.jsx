@@ -236,7 +236,7 @@ const Home = () => {
                 autoPlay muted loop playsInline
               >
                 <source
-                  src="https://assets.mixkit.co/videos/preview/mixkit-man-working-on-his-tablet-at-home-39879-large.mp4"
+                  src="/video/VideoPresentacion.mp4"
                   type="video/mp4"
                 />
               </video>
