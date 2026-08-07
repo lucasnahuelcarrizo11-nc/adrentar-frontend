@@ -511,21 +511,25 @@ const Perfil = () => {
                 {/* Matrícula profesional */}
                 <div>
                   <label style={labelStyle}>Matrícula profesional (PDF)</label>
-                  {matriculaUrl && (
-                    <a>
-
-                      href={matriculaUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '6px',
-                        fontSize: '13px', color: '#b07a5e', fontWeight: '600',
-                        textDecoration: 'none', marginBottom: '0.75rem',
-                      }}
-                    
-                      📄 Ver matrícula actual
-                    </a>
-                  )}
+                 {matriculaUrl && (
+  <a
+    href={matriculaUrl}
+    target="_blank"
+    rel="noreferrer"
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      fontSize: '13px',
+      color: '#b07a5e',
+      fontWeight: '600',
+      textDecoration: 'none',
+      marginBottom: '0.75rem',
+    }}
+  >
+    📄 Ver matrícula actual
+  </a>
+)}
 
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <input
